@@ -1,0 +1,42 @@
+Neptune Block Explorer Design notes:
+
+Initial functionality:
+
+    + show tip info (digest, height, etc)
+    + lookup block by selectors: height, digest, genesis, tip
+    + display block info
+    + something about generation addresses.  (ask Alan)
+    + lookup UTXO, show #of confirmations.  confirm utxo is confirmed
+
+Block Explorer RPC calls:
+    + tip_info
+    + block_info
+    + utxo_info
+
+Neptune RPC calls to support Block Explorer:
+    + tip_info
+    + block_info
+    + utxo_info
+
+
+Architecture:
+
+    Block Explorer is comprised of:
+        Server:
+            RPC Server (backend)
+            GUI Server (for serving html/js/wasm)
+        Client:
+            Web Client (browser, mobile, etc)
+            Rpc Client (browser, any 3rd party app)
+
+    RPC Server and GUI Server are components of the same
+    server instance.  The server is built with axum framework.
+
+    GUI html framework(s) is TBD.  For now we just produce very
+    basic raw HTML using axum.
+
+    Server and Client communicate via RPC. The initial RPC mechanism
+    is REST using axum's built-in rest support.  Rest has the benefit
+    that it can be accessed via a web-browser. We may add
+    JSON-RPC support later.
+
