@@ -25,6 +25,7 @@ thiserror = "1.0.58"
 boilerplate = { version = "1.0.0" }
 html-escaper = "0.2.0"
 tower-http = { version = "0.5.2", features = ["fs"] }
+readonly = "0.2.12"
 
 
 [patch.crates-io]
