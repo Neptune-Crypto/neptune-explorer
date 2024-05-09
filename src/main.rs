@@ -62,7 +62,7 @@ async fn main() -> Result<(), RpcError> {
             "/css/styles.css",
             ServeFile::new(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/src/web/css/styles.css"
+                "/templates/web/css/styles.css"
             )),
         )
         // add state
