@@ -5,10 +5,15 @@ use axum::{
     routing::get,
     Json, Router,
 };
+use tower_http::{
+    services::ServeFile,
+};
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
+use std::ops::Deref;
 use thiserror::Error;
+use html_escaper::{Escape, Trusted};
 
 use neptune_core::config_models::network::Network;
 use neptune_core::models::blockchain::block::block_height::BlockHeight;
@@ -32,7 +37,7 @@ pub struct Config {
     port: u16,
 }
 
-struct AppState {
+pub struct AppState {
     network: Network,
     #[allow(dead_code)]
     config: Config,
@@ -205,76 +210,18 @@ async fn root(
     State(state): State<Arc<AppState>>,
 ) -> Html<String> {
 
-    let network = state.network;
-    let genesis_block_hex = state.genesis_digest.to_hex();
+    #[derive(boilerplate::Boilerplate)]
+    #[boilerplate(filename = "web/html/page/root.html")]
+    pub struct RootHtmlPage(Arc<AppState>);
+    impl Deref for RootHtmlPage {
+        type Target = AppState;
+        fn deref(&self) -> &Self::Target {
+            &self.0
+        }
+    }
 
-    let html = format!(r#"
-        <html>
-        <head>
-         <title>Neptune Block Explorer: (network: {network})</title>
-         <style>
-          div.indent {{position: relative; left: 20px;}}
-          body {{font-family: arial, helvetica;}}
-          </style>
-        </head>
-        <body>
-        <h1>Neptune Block Explorer (network: {network})</h1>
-        <script>
-        function handle_submit(form){{
-            let value = form.height_or_digest.value;
-            var is_digest = value.length == 80;
-            var type = is_digest ? "digest" : "height";
-            var uri = form.action + "/" + type + "/" + value;
-            window.location.href = uri;
-            return false;
-        }}
-        </script>
-        <form action="/block" method="get" onsubmit="return handle_submit(this)">
-        Block height or digest:
-        <input type="text" size="80" name="height_or_digest"/>
-        <input type="submit" name="height" value="Lookup Block"/>
-        </form>
-
-        Quick Lookup:
-         <a href="/block/genesis">Genesis Block</a> |
-         <a href="/block/tip">Tip</a><br/>
-
-        <h2>REST RPCs</h2>
-
-        <h3>/block_info</h3>
-        <div class="indent">
-            <h4>Examples</h4>
-
-            <a href="/rpc/block_info/genesis">/rpc/block_info/genesis</a><br/>
-            <a href="/rpc/block_info/tip">/rpc/block_info/tip</a><br/>
-            <a href="/rpc/block_info/height/2">/rpc/block_info/height/2</a><br/>
-            <a href="/rpc/block_info/digest/{genesis_block_hex}">/rpc/block_info/digest/{genesis_block_hex}</a><br/>
-            <a href="/rpc/block_info/height_or_digest/1">/rpc/block_info/height_or_digest/1</a><br/>
-        </div>
-
-        <h3>/block_digest</h3>
-        <div class="indent">
-            <h4>Examples</h4>
-
-            <a href="/rpc/block_digest/genesis">/rpc/block_digest/genesis</a><br/>
-            <a href="/rpc/block_digest/tip">/rpc/block_digest/tip</a><br/>
-            <a href="/rpc/block_digest/height/2">/rpc/block_digest/height/2</a><br/>
-            <a href="/rpc/block_digest/digest/{genesis_block_hex}">/rpc/block_digest/digest/{genesis_block_hex}</a><br/>
-            <a href="/rpc/block_digest/height_or_digest/{genesis_block_hex}">/rpc/block_digest/height_or_digest/{genesis_block_hex}</a><br/>
-        </div>
-
-        <h3>/utxo_digest</h3>
-        <div class="indent">
-            <h4>Examples</h4>
-
-            <a href="/rpc/utxo_digest/2">/rpc/utxo_digest/2</a><br/>
-        </div>
-
-        </body>
-        </html>
-    "#);
-
-    Html(html)
+    let root_page = RootHtmlPage(state);
+    Html(root_page.to_string())
 }
 
 async fn block_page(
@@ -285,77 +232,63 @@ async fn block_page(
     block_page_with_value(value_path, state).await
 }
 
+#[derive(boilerplate::Boilerplate)]
+#[boilerplate(filename = "web/html/components/header.html")]
+pub struct HeaderHtml{
+    site_name: String,
+    state: Arc<AppState>,
+}
+
 #[axum::debug_handler]
 async fn block_page_with_value(
     Path((path_block_selector, value)): Path<(PathBlockSelector, String)>,
     State(state): State<Arc<AppState>>,
 ) -> Result<Html<String>, Response> {
 
+    #[derive(boilerplate::Boilerplate)]
+    #[boilerplate(filename = "web/html/page/block_info.html")]
+    pub struct BlockInfoHtmlPage{
+        header: HeaderHtml,
+        block_info: BlockInfo
+    }
+
+    let header = HeaderHtml{site_name: "Neptune Explorer".to_string(), state: state.clone()};
+
     let block_info = block_info_with_value_worker(state, path_block_selector, &value).await?;
-    let BlockInfo {height, digest, timestamp, num_inputs, num_outputs, num_uncle_blocks, difficulty, mining_reward, fee, is_genesis, is_tip, ..} = block_info;
-
-    let digest_hex = digest.to_hex();
-
-    let prev_link = match is_genesis {
-        true => "".to_string(),
-        false => format!("<a href='/block/height/{}'>Previous Block</a>", height.previous())
-    };
-
-    let next_link = match is_tip {
-        true => "".to_string(),
-        false => format!("<a href='/block/height/{}'>Next Block</a>", height.next())
-    };
-
-    let special_block_notice = match (is_genesis, is_tip) {
-        (true, false) => "<p>This is the Genesis Block</p>",
-        (false, true) => "<p>This is the Latest Block (tip)</p>",
-        _ => "",
-    };
-
-    let timestamp_display = timestamp.standard_format();
-
-    let html = format!( r#"
-    <html>
-        <head>
-         <title>Neptune Block Explorer: Block Height {height}</title>
-         <style>
-          div.indent {{position: relative; left: 20px;}}
-          body {{font-family: arial, helvetica;}}
-          table.alt {{margin-top: 10px; margin-bottom: 10px; padding: 10px; border-collapse: collapse; }}
-          table.alt td, th {{ padding: 5px;}}
-          table.alt tr:nth-child(odd) td{{background:#eee;}}
-          table.alt tr:nth-child(even) td{{background:#fff;}}
-          </style>
-        </head>
-        <body>
-        <h1>Block height: {height}</h1>
-        <b>Digest:</b> {digest_hex}
-
-        {special_block_notice}
-
-        <table class="alt">
-        <tr><td>Created</td><td>{timestamp_display}</td></tr>
-        <tr><td>Inputs</td><td>{num_inputs}<br/></td></tr>
-        <tr><td>Outputs</td><td>{num_outputs}</td></tr>
-        <tr><td>Uncle blocks</td><td>{num_uncle_blocks}</td></tr>
-        <tr><td>Difficulty</td><td>{difficulty}</td></tr>
-        <tr><td>Mining Reward</td><td>{mining_reward}</td></tr>
-        <tr><td>Fee</td><td>{fee}</td></tr>
-        </table>
-
-        <p>
-        <a href="/">Home</a>
-        {prev_link}
-        {next_link}
-        </p>
-
-        </body>
-    </html>
-    "# );
-
-    Ok(Html(html))
+    let block_info_page = BlockInfoHtmlPage{header, block_info};
+    Ok(Html(block_info_page.to_string()))
 }
 
+
+#[axum::debug_handler]
+async fn utxo_page(
+    Path(index): Path<u64>,
+    State(state): State<Arc<AppState>>,
+) -> Result<Html<String>, Response> {
+
+    #[derive(boilerplate::Boilerplate)]
+    #[boilerplate(filename = "web/html/page/utxo.html")]
+    pub struct UtxoHtmlPage{
+        header: HeaderHtml,
+        index: u64,
+        digest: Digest,
+    }
+
+    let digest = match state
+        .rpc_client
+        .utxo_digest(context::current(), index)
+        .await
+        .map_err(rpc_err)?
+    {
+        Some(digest) => digest,
+        None => return Err(not_found_err()),
+    };
+
+    let header = HeaderHtml{site_name: "Neptune Explorer".to_string(), state: state.clone()};
+
+    let utxo_page = UtxoHtmlPage{index, header, digest};
+    Ok(Html(utxo_page.to_string()))
+}
 
 #[tokio::main]
 async fn main() -> Result<(), RpcError> {
@@ -371,6 +304,7 @@ async fn main() -> Result<(), RpcError> {
     });
 
     let app = Router::new()
+        // -- RPC calls --
         .route("/rpc/block_info/:selector", get(block_info))
         .route("/rpc/block_info/:selector/:value", get(block_info_with_value))
         .route(
@@ -379,9 +313,17 @@ async fn main() -> Result<(), RpcError> {
         )
         .route("/rpc/block_digest/:selector", get(block_digest))
         .route("/rpc/utxo_digest/:index", get(utxo_digest))
+
+        // -- Dynamic HTML pages --
         .route("/", get(root))
         .route("/block/:selector", get(block_page))
         .route("/block/:selector/:value", get(block_page_with_value))
+        .route("/utxo/:value", get(utxo_page))
+
+        // -- Static files --
+        .route_service("/css/styles.css", ServeFile::new(concat!(env!("CARGO_MANIFEST_DIR"), "/src/web/css/styles.css")))
+
+        // add state
         .with_state(shared_state);
 
     println!("Running on http://localhost:3000");

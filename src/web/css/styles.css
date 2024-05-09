@@ -1,0 +1,42 @@
+div.box h1,
+div.box h2,
+div.box h3 {
+    margin-top: 0px;
+    margin-bottom: 5px;
+}
+
+div.indent {
+    position: relative;
+    left: 20px;
+}
+
+div.box {
+    margin-bottom: 10px;
+    border: solid 1px #ccc;
+    border-top-left-radius: 15px;
+    padding: 10px;
+}
+
+body {
+    font-family: arial, helvetica;
+}
+
+table.alt {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-collapse: collapse;
+}
+
+table.alt td,
+th {
+    padding: 5px;
+}
+
+table.alt tr:nth-child(odd) td {
+    background: #eee;
+}
+
+table.alt tr:nth-child(even) td {
+    background: #fff;
+}

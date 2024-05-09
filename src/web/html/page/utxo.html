@@ -1,0 +1,30 @@
+<html>
+
+<head>
+    <title>Neptune Block Explorer: Utxo {{self.index}}</title>
+    <link rel="stylesheet" type="text/css" href="/css/styles.css" media="screen" />
+</head>
+
+<body>
+{{Trusted(self.header.to_string())}}
+
+<h3>Utxo Information</h3>
+    <table class="alt">
+        <tr>
+            <td>Index</td>
+            <td>{{self.index}}</td>
+        </tr>
+        <tr>
+            <td>Digest</td>
+            <td>{{self.digest.to_hex()}}</td>
+        </tr>
+    </table>
+
+    <p>
+        <a href="/">Home</a>
+        | <a href='/block/genesis'>Genesis</a>
+        | <a href='/block/tip'>Tip</a>
+    </p>
+
+</body>
+</html>

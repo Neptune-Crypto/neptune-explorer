@@ -1,0 +1,80 @@
+<html>
+<head>
+    <title>Neptune Block Explorer: (network: {{self.network}})</title>
+    <link rel="stylesheet" type="text/css" href="/css/styles.css" media="screen" />
+</head>
+<body>
+<h1>Neptune Block Explorer (network: {{self.network}})</h1>
+<script>
+function handle_submit(form){
+    let value = form.height_or_digest.value;
+    var is_digest = value.length == 80;
+    var type = is_digest ? "digest" : "height";
+    var uri = form.action + "/" + type + "/" + value;
+    window.location.href = uri;
+    return false;
+}
+function handle_utxo_submit(form) {
+    let value = form.utxo.value;
+    var uri = form.action + "/" + value;
+    window.location.href = uri;
+    return false;
+}
+</script>
+
+<div class="box">
+<h3>Block Lookup</h3>
+<form action="/block" method="get" onsubmit="return handle_submit(this)">
+Block height or digest:
+<input type="text" size="80" name="height_or_digest"/>
+<input type="submit" name="height" value="Lookup Block"/>
+</form>
+
+Quick Lookup:
+    <a href="/block/genesis">Genesis Block</a> |
+    <a href="/block/tip">Tip</a><br/>
+</div>
+
+
+<div class="box">
+<h3>Utxo Lookup</h3>
+<form action="/utxo" method="get" onsubmit="return handle_utxo_submit(this)">
+    Utxo index:
+    <input type="text" size="10" name="utxo" />
+    <input type="submit" name="height" value="Lookup Utxo" />
+</form>
+</div>
+
+<h2>REST RPCs</h2>
+
+<h3>/block_info</h3>
+<div class="indent">
+    <h4>Examples</h4>
+
+    <a href="/rpc/block_info/genesis">/rpc/block_info/genesis</a><br/>
+    <a href="/rpc/block_info/tip">/rpc/block_info/tip</a><br/>
+    <a href="/rpc/block_info/height/2">/rpc/block_info/height/2</a><br/>
+    <a href="/rpc/block_info/digest/{{self.genesis_digest.to_hex()}}">/rpc/block_info/digest/{{self.genesis_digest.to_hex()}}</a><br/>
+    <a href="/rpc/block_info/height_or_digest/1">/rpc/block_info/height_or_digest/1</a><br/>
+</div>
+
+<h3>/block_digest</h3>
+<div class="indent">
+    <h4>Examples</h4>
+
+    <a href="/rpc/block_digest/genesis">/rpc/block_digest/genesis</a><br/>
+    <a href="/rpc/block_digest/tip">/rpc/block_digest/tip</a><br/>
+    <a href="/rpc/block_digest/height/2">/rpc/block_digest/height/2</a><br/>
+    <a href="/rpc/block_digest/digest/{genesis_block_hex}">/rpc/block_digest/digest/{genesis_block_hex}</a><br/>
+    <a href="/rpc/block_digest/height_or_digest/{genesis_block_hex}">/rpc/block_digest/height_or_digest/{genesis_block_hex}</a><br/>
+</div>
+
+<h3>/utxo_digest</h3>
+<div class="indent">
+    <h4>Examples</h4>
+
+    <a href="/rpc/utxo_digest/2">/rpc/utxo_digest/2</a><br/>
+</div>
+
+</body>
+</html>

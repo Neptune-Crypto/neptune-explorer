@@ -12,7 +12,7 @@ serde_json = "1.0.115"
 tokio = { version = "1.37.0", features = ["full", "tracing"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
-neptune-core = {path = "../neptune-core"}
+neptune-core = {git = "https://github.com/Neptune-Crypto/neptune-core.git", rev = "9a7973259d63f148f8bf353866f260ba939d4649"}
 tarpc = { version = "^0.34", features = [
     "tokio1",
     "serde-transport",
@@ -21,6 +21,10 @@ tarpc = { version = "^0.34", features = [
 ] }
 clap = "4.5.4"
 thiserror = "1.0.58"
+#boilerplate = { version = "1.0.0", features = ["axum"] }
+boilerplate = { version = "1.0.0" }
+html-escaper = "0.2.0"
+tower-http = { version = "0.5.2", features = ["fs"] }
 
 
 [patch.crates-io]

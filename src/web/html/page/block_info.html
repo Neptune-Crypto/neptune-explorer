@@ -1,0 +1,74 @@
+<html>
+
+<head>
+    <title>Neptune Block Explorer: Block Height {{self.block_info.height}}</title>
+    <link rel="stylesheet" type="text/css" href="/css/styles.css" media="screen" />
+</head>
+
+<body>
+{{Trusted(self.header.to_string())}}
+
+    <h2>Block height: {{self.block_info.height}}</h2>
+
+<!-- special_block_notice -->
+%%  if self.block_info.is_genesis {
+        <p>This is the Genesis Block</p>
+%%  }
+%%  if self.block_info.is_tip {
+        <p>This is the Latest Block (tip)</p>
+%%  }
+
+    <table class="alt">
+        <tr>
+            <td>Digest</td>
+            <td>{{self.block_info.digest.to_hex()}}</td>
+        </tr>
+        <tr>
+            <td>Created</td>
+            <td>{{self.block_info.timestamp.standard_format()}}</td>
+        </tr>
+        <tr>
+            <td>Inputs</td>
+            <td>{{self.block_info.num_inputs}}<br /></td>
+        </tr>
+        <tr>
+            <td>Outputs</td>
+            <td>{{self.block_info.num_outputs}}</td>
+        </tr>
+        <tr>
+            <td>Uncle blocks</td>
+            <td>{{self.block_info.num_uncle_blocks}}</td>
+        </tr>
+        <tr>
+            <td>Difficulty</td>
+            <td>{{self.block_info.difficulty}}</td>
+        </tr>
+        <tr>
+            <td>Mining Reward</td>
+            <td>{{self.block_info.mining_reward}}</td>
+        </tr>
+        <tr>
+            <td>Fee</td>
+            <td>{{self.block_info.fee}}</td>
+        </tr>
+    </table>
+
+    <p>
+        <a href="/">Home</a>
+        | <a href='/block/genesis'>Genesis</a>
+        | <a href='/block/tip'>Tip</a>
+%% if self.block_info.is_genesis {
+        | Previous Block
+%% } else {
+        | <a href='/block/height/{{self.block_info.height.previous()}}'>Previous Block</a>
+%% }
+
+%% if self.block_info.is_tip {
+        | Next Block
+%% } else {
+        | <a href='/block/height/{{self.block_info.height.next()}}'>Next Block</a>
+%% }
+    </p>
+
+</body>
+</html>
