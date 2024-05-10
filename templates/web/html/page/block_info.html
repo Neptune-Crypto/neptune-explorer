@@ -1,13 +1,19 @@
+<!doctype html>
 <html>
 
 <head>
     <title>Neptune Block Explorer: Block Height {{self.block_info.height}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/css/pico.min.css" media="screen" />
     <link rel="stylesheet" type="text/css" href="/css/styles.css" media="screen" />
 </head>
 
 <body>
 {{Trusted(self.header.to_string())}}
 
+<main class="container">
+
+<article>
     <h2>Block height: {{self.block_info.height}}</h2>
 
 <!-- special_block_notice -->
@@ -18,7 +24,7 @@
         <p>This is the Latest Block (tip)</p>
 %%  }
 
-    <table class="alt">
+    <table class="striped">
         <tr>
             <td>Digest</td>
             <td>{{self.block_info.digest.to_hex()}}</td>
@@ -53,6 +59,10 @@
         </tr>
     </table>
 
+</article>
+
+<article>
+
     <p>
         <a href="/">Home</a>
         | <a href='/block/genesis'>Genesis</a>
@@ -70,5 +80,7 @@
 %% }
     </p>
 
+</article>
+</main>
 </body>
 </html>

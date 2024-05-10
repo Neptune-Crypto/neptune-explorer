@@ -59,6 +59,13 @@ async fn main() -> Result<(), RpcError> {
         .route("/utxo/:value", get(utxo_page))
         // -- Static files --
         .route_service(
+            "/css/pico.min.css",
+            ServeFile::new(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/templates/web/css/pico.min.css"
+            )),
+        )
+        .route_service(
             "/css/styles.css",
             ServeFile::new(concat!(
                 env!("CARGO_MANIFEST_DIR"),

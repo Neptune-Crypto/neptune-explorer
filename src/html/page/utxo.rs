@@ -1,7 +1,7 @@
 use crate::html::component::header::HeaderHtml;
-use crate::http_util::not_found_err;
-use crate::http_util::rpc_err;
+use crate::html::page::not_found::not_found_html_response;
 use crate::model::app_state::AppState;
+use axum::extract::rejection::PathRejection;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::response::Html;
@@ -14,7 +14,7 @@ use tarpc::context;
 
 #[axum::debug_handler]
 pub async fn utxo_page(
-    Path(index): Path<u64>,
+    index_maybe: Result<Path<u64>, PathRejection>,
     State(state): State<Arc<AppState>>,
 ) -> Result<Html<String>, Response> {
     #[derive(boilerplate::Boilerplate)]
@@ -25,14 +25,22 @@ pub async fn utxo_page(
         digest: Digest,
     }
 
+    let Path(index) = index_maybe
+        .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?;
+
     let digest = match state
         .rpc_client
         .utxo_digest(context::current(), index)
         .await
-        .map_err(rpc_err)?
+        .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?
     {
         Some(digest) => digest,
-        None => return Err(not_found_err()),
+        None => {
+            return Err(not_found_html_response(
+                State(state.clone()),
+                Some("The requested UTXO does not exist".to_string()),
+            ))
+        }
     };
 
     let header = HeaderHtml {

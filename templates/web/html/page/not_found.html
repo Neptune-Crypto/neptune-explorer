@@ -1,29 +1,27 @@
 <html>
 
 <head>
-    <title>Neptune Block Explorer: Utxo {{self.index}}</title>
+    <title>Neptune Block Explorer: Not Found</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="/css/pico.min.css" media="screen" />
     <link rel="stylesheet" type="text/css" href="/css/styles.css" media="screen" />
 </head>
 
 <body>
-{{Trusted(self.header.to_string())}}
 
 <main class="container">
 
 <article>
-<summary>Utxo Information</summary>
-    <table class="striped">
-        <tr>
-            <td>Index</td>
-            <td>{{self.index}}</td>
-        </tr>
-        <tr>
-            <td>Digest</td>
-            <td>{{self.digest.to_hex()}}</td>
-        </tr>
-    </table>
+<header class="center-text"><h3>Not found</h3></header>
+<section>
+These are not the droids you're looking for.
+</section>
+
+%% if self.error_msg.len() > 0 {
+<section>
+Hint: {{self.error_msg}}
+</section>
+%% }
 </article>
 
 <article>

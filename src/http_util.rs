@@ -1,4 +1,5 @@
 use axum::http::StatusCode;
+use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::response::Response;
 use tarpc::client::RpcError;
@@ -8,6 +9,10 @@ use tarpc::client::RpcError;
 
 pub fn not_found_err() -> Response {
     (StatusCode::NOT_FOUND, "Not Found".to_string()).into_response()
+}
+
+pub fn not_found_html_err(html: Html<String>) -> Response {
+    (StatusCode::NOT_FOUND, html).into_response()
 }
 
 pub fn rpc_err(e: RpcError) -> Response {
