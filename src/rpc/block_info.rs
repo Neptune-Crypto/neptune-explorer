@@ -2,7 +2,7 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::response::Json;
 use axum::response::Response;
-use neptune_core::rpc_server::BlockInfo;
+use neptune_core::models::blockchain::block::block_info::BlockInfo;
 use std::sync::Arc;
 use tarpc::context;
 

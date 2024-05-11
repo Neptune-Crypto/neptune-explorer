@@ -1,7 +1,7 @@
 use axum::routing::get;
 use axum::routing::Router;
 use clap::Parser;
-use neptune_core::rpc_server::BlockSelector;
+use neptune_core::models::blockchain::block::block_selector::BlockSelector;
 use neptune_core::rpc_server::RPCClient;
 use neptune_explorer::html::page::block::block_page;
 use neptune_explorer::html::page::block::block_page_with_value;

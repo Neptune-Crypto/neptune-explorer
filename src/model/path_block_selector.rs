@@ -2,9 +2,9 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Response;
 use neptune_core::models::blockchain::block::block_height::BlockHeight;
+use neptune_core::models::blockchain::block::block_selector::BlockSelector;
 use neptune_core::prelude::tasm_lib::Digest;
 use neptune_core::prelude::twenty_first::error::TryFromHexDigestError;
-use neptune_core::rpc_server::BlockSelector;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
