@@ -5,6 +5,7 @@ use neptune_core::models::blockchain::block::block_selector::BlockSelector;
 use neptune_core::rpc_server::RPCClient;
 use neptune_explorer::html::page::block::block_page;
 use neptune_explorer::html::page::block::block_page_with_value;
+use neptune_explorer::html::page::not_found::not_found_html_fallback;
 use neptune_explorer::html::page::root::root;
 use neptune_explorer::html::page::utxo::utxo_page;
 use neptune_explorer::model::app_state::AppState;
@@ -21,7 +22,7 @@ use tarpc::client;
 use tarpc::client::RpcError;
 use tarpc::context;
 use tarpc::tokio_serde::formats::Json as RpcJson;
-use tower_http::services::ServeFile;
+use tower_http::services::ServeDir;
 
 #[tokio::main]
 async fn main() -> Result<(), RpcError> {
@@ -58,20 +59,16 @@ async fn main() -> Result<(), RpcError> {
         .route("/block/:selector/:value", get(block_page_with_value))
         .route("/utxo/:value", get(utxo_page))
         // -- Static files --
-        .route_service(
-            "/css/pico.min.css",
-            ServeFile::new(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/templates/web/css/pico.min.css"
-            )),
+        .nest_service(
+            "/css",
+            ServeDir::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/web/css")),
         )
-        .route_service(
-            "/css/styles.css",
-            ServeFile::new(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/templates/web/css/styles.css"
-            )),
+        .nest_service(
+            "/image",
+            ServeDir::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/web/image")),
         )
+        // handle route not-found
+        .fallback(not_found_html_fallback(shared_state.clone()))
         // add state
         .with_state(shared_state);
 

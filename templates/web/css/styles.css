@@ -3,6 +3,59 @@ div.indent {
     left: 20px;
 }
 
+.mono {
+    font-family: monospace, monospace;
+}
+
 .center-text {
     text-align: center;
+}
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    bottom: 0.1em;
+    transition: 0s;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+    transition-delay: 0.5s;
+    top: -5px;
+    left: 115%;
+    visibility: hidden;
+    width: 300px;
+    background-color: white;
+    color: rgb(0, 118, 118);
+    text-align: center;
+    padding: 5px;
+    border-radius: 6px;
+    border: solid 1px rgb(1, 220, 220);
+
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+}
+
+/* adds a speech-bubble thingy at top-left of tooltip */
+.tooltip .tooltiptext::after {
+    content: " ";
+    position: absolute;
+    top: 20px;
+    right: 100%;
+    /* To the left of the tooltip */
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent rgb(1, 220, 220) transparent transparent;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
+
+.tooltip:hover {
+    cursor: help;
 }

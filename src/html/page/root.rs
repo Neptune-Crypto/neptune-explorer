@@ -1,22 +1,28 @@
+use crate::html::page::not_found::not_found_html_response;
 use crate::model::app_state::AppState;
 use axum::extract::State;
 use axum::response::Html;
+use axum::response::Response;
 use html_escaper::Escape;
-use std::ops::Deref;
+use neptune_core::models::blockchain::block::block_height::BlockHeight;
 use std::sync::Arc;
+use tarpc::context;
 
 #[axum::debug_handler]
-pub async fn root(State(state): State<Arc<AppState>>) -> Html<String> {
+pub async fn root(State(state): State<Arc<AppState>>) -> Result<Html<String>, Response> {
     #[derive(boilerplate::Boilerplate)]
     #[boilerplate(filename = "web/html/page/root.html")]
-    pub struct RootHtmlPage(Arc<AppState>);
-    impl Deref for RootHtmlPage {
-        type Target = AppState;
-        fn deref(&self) -> &Self::Target {
-            &self.0
-        }
+    pub struct RootHtmlPage {
+        tip_height: BlockHeight,
+        state: Arc<AppState>,
     }
 
-    let root_page = RootHtmlPage(state);
-    Html(root_page.to_string())
+    let tip_height = state
+        .rpc_client
+        .block_height(context::current())
+        .await
+        .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?;
+
+    let root_page = RootHtmlPage { tip_height, state };
+    Ok(Html(root_page.to_string()))
 }

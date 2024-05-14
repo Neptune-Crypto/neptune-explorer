@@ -1,7 +1,9 @@
 use crate::html::component::header::HeaderHtml;
 use crate::http_util::not_found_html_err;
+use crate::http_util::not_found_html_handler;
 use crate::model::app_state::AppState;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::response::Html;
 use axum::response::Response;
 use html_escaper::Escape;
@@ -38,4 +40,8 @@ pub fn not_found_html_response(
     error_msg: Option<String>,
 ) -> Response {
     not_found_html_err(not_found_page(State(state), error_msg))
+}
+
+pub fn not_found_html_fallback(state: Arc<AppState>) -> (StatusCode, Html<String>) {
+    not_found_html_handler(not_found_page(State(state), None))
 }
