@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>Neptune Block Explorer: (network: {{self.state.network}})</title>
+    <title>{{self.state.config.site_name}}: (network: {{self.state.network}})</title>
 {{ html_escaper::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"), "/templates/web/html/components/head.html"))) }}
     <script>
         function handle_submit(form) {
@@ -23,7 +23,7 @@
 <header class="container">
 <h1>
     <img src="/image/neptune-logo.png" align="right"/>
-    Neptune Block Explorer (network: {{self.state.network}})
+    {{self.state.config.site_name}} (network: {{self.state.network}})
 </h1>
 The blockchain tip is at height: {{self.tip_height}}
 </header>

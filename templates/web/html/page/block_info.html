@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Neptune Block Explorer: Block Height {{self.block_info.height}}</title>
+    <title>{{self.header.state.config.site_name}}: Block Height {{self.block_info.height}}</title>
 {{html_escaper::Trusted(include_str!(concat!(env!("CARGO_MANIFEST_DIR"),"/templates/web/html/components/head.html")))}}
 </head>
 
@@ -16,10 +16,10 @@
 
 <!-- special_block_notice -->
 %%  if self.block_info.is_genesis {
-        <p>This is the Genesis Block</p>
+        <p>This is the genesis block</p>
 %%  }
 %%  if self.block_info.is_tip {
-        <p>This is the Latest Block (tip)</p>
+        <p>This is the latest block (tip)</p>
 %%  }
 
     <table class="striped">

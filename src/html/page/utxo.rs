@@ -44,7 +44,6 @@ pub async fn utxo_page(
     };
 
     let header = HeaderHtml {
-        site_name: "Neptune Explorer".to_string(),
         state: state.clone(),
     };
 

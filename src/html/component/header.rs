@@ -5,6 +5,5 @@ use std::sync::Arc;
 #[derive(boilerplate::Boilerplate)]
 #[boilerplate(filename = "web/html/components/header.html")]
 pub struct HeaderHtml {
-    pub site_name: String,
     pub state: Arc<AppState>,
 }

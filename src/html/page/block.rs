@@ -40,7 +40,6 @@ pub async fn block_page_with_value(
         .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?;
 
     let header = HeaderHtml {
-        site_name: "Neptune Explorer".to_string(),
         state: state.clone(),
     };
 
