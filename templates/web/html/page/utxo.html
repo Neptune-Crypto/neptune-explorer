@@ -2,9 +2,7 @@
 
 <head>
     <title>Neptune Block Explorer: Utxo {{self.index}}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="/css/pico.min.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/css/styles.css" media="screen" />
+{{html_escaper::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"), "/templates/web/html/components/head.html")))}}
 </head>
 
 <body>

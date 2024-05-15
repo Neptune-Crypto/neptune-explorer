@@ -1,27 +1,23 @@
 <html>
 <head>
     <title>Neptune Block Explorer: (network: {{self.state.network}})</title>
-    <link rel="stylesheet" type="text/css" href="/css/styles.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/css/pico.min.css" media="screen" />
-    <link rel="icon" type="image/png" sizes="48x48" href="/image/neptune-favicon.png">
-
-<script>
-    function handle_submit(form) {
-        let value = form.height_or_digest.value;
-        var is_digest = value.length == 80;
-        var type = is_digest ? "digest" : "height";
-        var uri = form.action + "/" + type + "/" + value;
-        window.location.href = uri;
-        return false;
-    }
-    function handle_utxo_submit(form) {
-        let value = form.utxo.value;
-        var uri = form.action + "/" + value;
-        window.location.href = uri;
-        return false;
-    }
-</script>
-
+{{ html_escaper::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"), "/templates/web/html/components/head.html"))) }}
+    <script>
+        function handle_submit(form) {
+            let value = form.height_or_digest.value;
+            var is_digest = value.length == 80;
+            var type = is_digest ? "digest" : "height";
+            var uri = form.action + "/" + type + "/" + value;
+            window.location.href = uri;
+            return false;
+        }
+        function handle_utxo_submit(form) {
+            let value = form.utxo.value;
+            var uri = form.action + "/" + value;
+            window.location.href = uri;
+            return false;
+        }
+    </script>
 </head>
 <body>
 <header class="container">
