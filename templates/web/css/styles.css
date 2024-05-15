@@ -1,3 +1,44 @@
+/* override color for light color scheme (Default) */
+/* Can be forced with data-theme="light" */
+[data-theme=light],
+:root:not([data-theme=dark]) {
+    --pico-color: rgb(0, 115, 115);
+    --pico-h1-color: var(--pico-color);
+    --pico-h2-color: var(--pico-color);
+    --pico-h3-color: var(--pico-color);
+    --pico-h4-color: var(--pico-color);
+    --pico-h5-color: var(--pico-color);
+    --pico-h6-color: var(--pico-color);
+    --pico-accordion-open-summary-color: var(--pico-color);
+}
+
+/* override color for dark color scheme (Auto) */
+/* Automatically enabled if user has Dark mode enabled */
+@media only screen and (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+    --pico-color: cyan;
+    --pico-h1-color: var(--pico-color);
+    --pico-h2-color: var(--pico-color);
+    --pico-h3-color: var(--pico-color);
+    --pico-h4-color: var(--pico-color);
+    --pico-h5-color: var(--pico-color);
+    --pico-h6-color: var(--pico-color);    }
+    --pico-accordion-open-summary-color: var(--pico-color);
+}
+
+/* override color for dark color scheme (Forced) */
+/* Enabled if forced with data-theme="dark" */
+[data-theme=dark] {
+    --pico-color: cyan;
+    --pico-h1-color: var(--pico-color);
+    --pico-h2-color: var(--pico-color);
+    --pico-h3-color: var(--pico-color);
+    --pico-h4-color: var(--pico-color);
+    --pico-h5-color: var(--pico-color);
+    --pico-h6-color: var(--pico-color);
+    --pico-accordion-open-summary-color: var(--pico-color);
+}
+
 div.indent {
     position: relative;
     left: 20px;
