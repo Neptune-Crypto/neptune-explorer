@@ -2,22 +2,6 @@
 <head>
     <title>{{self.state.config.site_name}}: (network: {{self.state.network}})</title>
 {{ html_escaper::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"), "/templates/web/html/components/head.html"))) }}
-    <script>
-        function handle_submit(form) {
-            let value = form.height_or_digest.value;
-            var is_digest = value.length == 80;
-            var type = is_digest ? "digest" : "height";
-            var uri = form.action + "/" + type + "/" + value;
-            window.location.href = uri;
-            return false;
-        }
-        function handle_utxo_submit(form) {
-            let value = form.utxo.value;
-            var uri = form.action + "/" + value;
-            window.location.href = uri;
-            return false;
-        }
-    </script>
 </head>
 <body>
 <header class="container">
@@ -35,7 +19,9 @@ The blockchain tip is at height: {{self.tip_height}}
 <summary>
     Block Lookup
 </summary>
-<form action="/block" method="get" onsubmit="return handle_submit(this)">
+<form action="/rqs" method="get">
+<input type="hidden" name="block" value="" />
+<input type="hidden" name="_ig" value="l"/>
 <span class="tooltip">🛈
     <span class="tooltiptext">
         Provide a numeric block height or hexadecimal digest identifier to lookup any block in the Neptune blockchain.
@@ -44,7 +30,7 @@ The blockchain tip is at height: {{self.tip_height}}
 
 Block height or digest:
 <input type="text" size="80" name="height_or_digest" class="mono"/>
-<input type="submit" name="height" value="Lookup Block"/>
+<input type="submit" name="l" value="Lookup Block"/>
 </form>
 
 Quick Lookup:
@@ -56,7 +42,8 @@ Quick Lookup:
 <article>
 <details open>
 <summary>UTXO Lookup</summary>
-<form action="/utxo" method="get" onsubmit="return handle_utxo_submit(this)">
+<form action="/rqs" method="get">
+<input type="hidden" name="_ig" value="l" />
     <span class="tooltip">🛈
         <span class="tooltiptext">
             An Unspent Transaction Output (UTXO) index can be found in the output of <i>neptune-cli wallet-status</i>.  Look for the field: <b>aocl_leaf_index</b>
@@ -64,7 +51,7 @@ Quick Lookup:
     </span>
     UTXO index:
     <input type="text" size="10" name="utxo" />
-    <input type="submit" name="height" value="Lookup Utxo" />
+    <input type="submit" name="l" value="Lookup Utxo" />
 </form>
 </details>
 </article>

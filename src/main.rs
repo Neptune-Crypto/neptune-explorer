@@ -6,6 +6,7 @@ use neptune_core::rpc_server::RPCClient;
 use neptune_explorer::html::page::block::block_page;
 use neptune_explorer::html::page::block::block_page_with_value;
 use neptune_explorer::html::page::not_found::not_found_html_fallback;
+use neptune_explorer::html::page::redirect_qs_to_path::redirect_query_string_to_path;
 use neptune_explorer::html::page::root::root;
 use neptune_explorer::html::page::utxo::utxo_page;
 use neptune_explorer::model::app_state::AppState;
@@ -58,6 +59,8 @@ async fn main() -> Result<(), RpcError> {
         .route("/block/:selector", get(block_page))
         .route("/block/:selector/:value", get(block_page_with_value))
         .route("/utxo/:value", get(utxo_page))
+        // -- Rewrite query-strings to path --
+        .route("/rqs", get(redirect_query_string_to_path))
         // -- Static files --
         .nest_service(
             "/css",
