@@ -4,7 +4,6 @@ use clap::Parser;
 use neptune_core::models::blockchain::block::block_selector::BlockSelector;
 use neptune_core::rpc_server::RPCClient;
 use neptune_explorer::html::page::block::block_page;
-use neptune_explorer::html::page::block::block_page_with_value;
 use neptune_explorer::html::page::not_found::not_found_html_fallback;
 use neptune_explorer::html::page::redirect_qs_to_path::redirect_query_string_to_path;
 use neptune_explorer::html::page::root::root;
@@ -12,9 +11,7 @@ use neptune_explorer::html::page::utxo::utxo_page;
 use neptune_explorer::model::app_state::AppState;
 use neptune_explorer::model::config::Config;
 use neptune_explorer::rpc::block_digest::block_digest;
-use neptune_explorer::rpc::block_digest::block_digest_with_value;
 use neptune_explorer::rpc::block_info::block_info;
-use neptune_explorer::rpc::block_info::block_info_with_value;
 use neptune_explorer::rpc::utxo_digest::utxo_digest;
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;
@@ -43,21 +40,12 @@ async fn main() -> Result<(), RpcError> {
 
     let app = Router::new()
         // -- RPC calls --
-        .route("/rpc/block_info/:selector", get(block_info))
-        .route(
-            "/rpc/block_info/:selector/:value",
-            get(block_info_with_value),
-        )
-        .route(
-            "/rpc/block_digest/:selector/:value",
-            get(block_digest_with_value),
-        )
-        .route("/rpc/block_digest/:selector", get(block_digest))
+        .route("/rpc/block_info/*selector", get(block_info))
+        .route("/rpc/block_digest/*selector", get(block_digest))
         .route("/rpc/utxo_digest/:index", get(utxo_digest))
         // -- Dynamic HTML pages --
         .route("/", get(root))
-        .route("/block/:selector", get(block_page))
-        .route("/block/:selector/:value", get(block_page_with_value))
+        .route("/block/*selector", get(block_page))
         .route("/utxo/:value", get(utxo_page))
         // -- Rewrite query-strings to path --
         .route("/rqs", get(redirect_query_string_to_path))

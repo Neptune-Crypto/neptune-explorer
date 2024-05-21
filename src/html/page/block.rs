@@ -1,7 +1,7 @@
 use crate::html::component::header::HeaderHtml;
 use crate::html::page::not_found::not_found_html_response;
 use crate::model::app_state::AppState;
-use crate::model::path_block_selector::PathBlockSelector;
+use crate::model::block_selector_extended::BlockSelectorExtended;
 use axum::extract::rejection::PathRejection;
 use axum::extract::Path;
 use axum::extract::State;
@@ -13,20 +13,9 @@ use neptune_core::models::blockchain::block::block_info::BlockInfo;
 use std::sync::Arc;
 use tarpc::context;
 
-pub async fn block_page(
-    user_input_maybe: Result<Path<PathBlockSelector>, PathRejection>,
-    state: State<Arc<AppState>>,
-) -> Result<Html<String>, Response> {
-    let Path(path_block_selector) = user_input_maybe
-        .map_err(|e| not_found_html_response(state.clone(), Some(e.to_string())))?;
-
-    let value_path: Path<(PathBlockSelector, String)> = Path((path_block_selector, "".to_string()));
-    block_page_with_value(Ok(value_path), state).await
-}
-
 #[axum::debug_handler]
-pub async fn block_page_with_value(
-    user_input_maybe: Result<Path<(PathBlockSelector, String)>, PathRejection>,
+pub async fn block_page(
+    user_input_maybe: Result<Path<BlockSelectorExtended>, PathRejection>,
     State(state): State<Arc<AppState>>,
 ) -> Result<Html<String>, Response> {
     #[derive(boilerplate::Boilerplate)]
@@ -36,21 +25,17 @@ pub async fn block_page_with_value(
         block_info: BlockInfo,
     }
 
-    let Path((path_block_selector, value)) = user_input_maybe
+    let Path(block_selector) = user_input_maybe
         .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?;
 
     let header = HeaderHtml {
         state: state.clone(),
     };
 
-    let block_selector = path_block_selector
-        .as_block_selector(&value)
-        .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?;
-
     let block_info = match state
         .clone()
         .rpc_client
-        .block_info(context::current(), block_selector)
+        .block_info(context::current(), block_selector.into())
         .await
         .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?
     {
