@@ -1,3 +1,4 @@
+use anyhow::Context;
 use axum::routing::get;
 use axum::routing::Router;
 use clap::Parser;
@@ -17,19 +18,24 @@ use std::net::Ipv4Addr;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tarpc::client;
-use tarpc::client::RpcError;
 use tarpc::context;
 use tarpc::tokio_serde::formats::Json as RpcJson;
 use tower_http::services::ServeDir;
 
 #[tokio::main]
-async fn main() -> Result<(), RpcError> {
-    let rpc_client = rpc_client().await;
-    let network = rpc_client.network(context::current()).await?;
+async fn main() -> Result<(), anyhow::Error> {
+    let rpc_client = rpc_client()
+        .await
+        .with_context(|| "Failed to create RPC client")?;
+    let network = rpc_client
+        .network(context::current())
+        .await
+        .with_context(|| "Failed calling neptune-core api: network")?;
     let genesis_digest = rpc_client
         .block_digest(context::current(), BlockSelector::Genesis)
-        .await?
-        .expect("Genesis block should be found");
+        .await
+        .with_context(|| "Failed calling neptune-core api: block_digest")?
+        .with_context(|| "neptune-core failed to provide a genesis block")?;
 
     let shared_state = Arc::new(AppState::from((
         network,
@@ -63,23 +69,27 @@ async fn main() -> Result<(), RpcError> {
         // add state
         .with_state(shared_state);
 
-    println!("Running on http://localhost:3000");
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let port = 3000;
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}"))
+        .await
+        .with_context(|| format!("Failed to bind to port {port}"))?;
+
+    println!("Running on http://localhost:{port}");
+
+    axum::serve(listener, app)
+        .await
+        .with_context(|| "Axum server encountered an error")?;
     Ok(())
 }
 
-async fn rpc_client() -> RPCClient {
+async fn rpc_client() -> Result<RPCClient, anyhow::Error> {
     // Create connection to neptune-core RPC server
     let args: Config = Config::parse();
     let server_socket = SocketAddr::new(std::net::IpAddr::V4(Ipv4Addr::LOCALHOST), args.port);
-    let transport = tarpc::serde_transport::tcp::connect(server_socket, RpcJson::default).await;
-    let transport = match transport {
-        Ok(transp) => transp,
-        Err(err) => {
-            eprintln!("{err}");
-            panic!("Connection to neptune-core failed. Is a node running?");
-        }
-    };
-    RPCClient::new(client::Config::default(), transport).spawn()
+    let transport = tarpc::serde_transport::tcp::connect(server_socket, RpcJson::default)
+        .await
+        .with_context(|| {
+            format!("Failed to connect to neptune-core rpc service at {server_socket}")
+        })?;
+    Ok(RPCClient::new(client::Config::default(), transport).spawn())
 }

@@ -21,13 +21,14 @@ tarpc = { version = "^0.34", features = [
 ] }
 clap = "4.5.4"
 thiserror = "1.0.59"
-#boilerplate = { version = "1.0.0", features = ["axum"] }
 boilerplate = { version = "1.0.0" }
 html-escaper = "0.2.0"
 tower-http = { version = "0.5.2", features = ["fs"] }
 readonly = "0.2.12"
 url = "2.5.0"
 
+# only should be used inside main.rs, for the binary.
+anyhow = "1.0.86"
 
 [patch.crates-io]
 # 694f27daf78aade0ed0dc07e3babaab036cd5572 is tip of branch: master as of 2024-04-30
