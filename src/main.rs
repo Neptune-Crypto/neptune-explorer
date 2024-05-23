@@ -69,7 +69,7 @@ async fn main() -> Result<(), anyhow::Error> {
         // add state
         .with_state(shared_state);
 
-    let port = 3000;
+    let port = Config::parse().listen_port;
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}"))
         .await
         .with_context(|| format!("Failed to bind to port {port}"))?;
@@ -85,7 +85,10 @@ async fn main() -> Result<(), anyhow::Error> {
 async fn rpc_client() -> Result<RPCClient, anyhow::Error> {
     // Create connection to neptune-core RPC server
     let args: Config = Config::parse();
-    let server_socket = SocketAddr::new(std::net::IpAddr::V4(Ipv4Addr::LOCALHOST), args.port);
+    let server_socket = SocketAddr::new(
+        std::net::IpAddr::V4(Ipv4Addr::LOCALHOST),
+        args.neptune_rpc_port,
+    );
     let transport = tarpc::serde_transport::tcp::connect(server_socket, RpcJson::default)
         .await
         .with_context(|| {

@@ -6,7 +6,11 @@ pub struct Config {
     #[clap(long, default_value = "Neptune Explorer", value_name = "site-name")]
     pub site_name: String,
 
-    /// Sets the server address to connect to.
+    /// Sets the port to listen for http requests.
+    #[clap(long, default_value = "3000", value_name = "PORT")]
+    pub listen_port: u16,
+
+    /// Sets the neptune-core rpc server address to connect to.
     #[clap(long, default_value = "9799", value_name = "PORT")]
-    pub port: u16,
+    pub neptune_rpc_port: u16,
 }

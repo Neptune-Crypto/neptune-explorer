@@ -31,15 +31,14 @@ nohup neptune-explorer 2>&1 > /path/to/logs/neptune-explorer.log &
 
 Notes:
 * The block-explorer automatically uses the same network (mainnet, testnet, etc) as the neptune-core instance it is connected to, and the network is displayed in the web interface.
-* if neptune-core RPC server is running on a non-standard port, you can provide it with the `--port` flag.
+* If neptune-core RPC server is running on a non-standard port, you can provide it with the `--neptune-rpc-port` flag.
+* neptune-explorer listens for http requests on port 3000 by default.  This can be changed with the `--listen-port` flag.
 * Site name can be specified with the `--site-name` flag.
 
 
 ## Connecting via Browser
 
 Just navigate to http://localhost:3000/
-
-(note: the port is not yet configurable.)
 
 
 ## SSL/TLS, Nginx, etc.
