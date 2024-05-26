@@ -74,9 +74,11 @@ use crate::model::app_state::AppState;
 #[axum::debug_handler]
 pub async fn redirect_query_string_to_path(
     RawQuery(raw_query_option): RawQuery,
-    State(state): State<Arc<AppState>>,
+    State(state_rw): State<Arc<AppState>>,
 ) -> Result<Response, Response> {
-    let not_found = || not_found_html_response(State(state.clone()), None);
+    let state = &*state_rw.read().await;
+
+    let not_found = || not_found_html_response(state, None);
 
     let raw_query = raw_query_option.ok_or_else(not_found)?;
 

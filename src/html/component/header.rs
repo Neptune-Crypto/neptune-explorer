@@ -1,9 +1,8 @@
-use crate::model::app_state::AppState;
+use crate::model::app_state::AppStateInner;
 use html_escaper::Escape;
-use std::sync::Arc;
 
 #[derive(boilerplate::Boilerplate)]
 #[boilerplate(filename = "web/html/components/header.html")]
-pub struct HeaderHtml {
-    pub state: Arc<AppState>,
+pub struct HeaderHtml<'a> {
+    pub state: &'a AppStateInner,
 }

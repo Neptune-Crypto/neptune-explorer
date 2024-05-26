@@ -16,35 +16,33 @@ use tarpc::context;
 #[axum::debug_handler]
 pub async fn block_page(
     user_input_maybe: Result<Path<BlockSelectorExtended>, PathRejection>,
-    State(state): State<Arc<AppState>>,
+    State(state_rw): State<Arc<AppState>>,
 ) -> Result<Html<String>, Response> {
     #[derive(boilerplate::Boilerplate)]
     #[boilerplate(filename = "web/html/page/block_info.html")]
-    pub struct BlockInfoHtmlPage {
-        header: HeaderHtml,
+    pub struct BlockInfoHtmlPage<'a> {
+        header: HeaderHtml<'a>,
         block_info: BlockInfo,
     }
+    let state = &*state_rw.read().await;
 
-    let Path(block_selector) = user_input_maybe
-        .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?;
-
-    let header = HeaderHtml {
-        state: state.clone(),
-    };
+    let Path(block_selector) =
+        user_input_maybe.map_err(|e| not_found_html_response(state, Some(e.to_string())))?;
 
     let block_info = match state
-        .clone()
         .rpc_client
         .block_info(context::current(), block_selector.into())
         .await
-        .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?
+        .map_err(|e| not_found_html_response(state, Some(e.to_string())))?
     {
         Some(info) => Ok(info),
         None => Err(not_found_html_response(
-            State(state),
+            state,
             Some("Block does not exist".to_string()),
         )),
     }?;
+
+    let header = HeaderHtml { state };
 
     let block_info_page = BlockInfoHtmlPage { header, block_info };
     Ok(Html(block_info_page.to_string()))

@@ -15,37 +15,37 @@ use tarpc::context;
 #[axum::debug_handler]
 pub async fn utxo_page(
     index_maybe: Result<Path<u64>, PathRejection>,
-    State(state): State<Arc<AppState>>,
+    State(state_rw): State<Arc<AppState>>,
 ) -> Result<Html<String>, Response> {
     #[derive(boilerplate::Boilerplate)]
     #[boilerplate(filename = "web/html/page/utxo.html")]
-    pub struct UtxoHtmlPage {
-        header: HeaderHtml,
+    pub struct UtxoHtmlPage<'a> {
+        header: HeaderHtml<'a>,
         index: u64,
         digest: Digest,
     }
 
-    let Path(index) = index_maybe
-        .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?;
+    let state = &*state_rw.read().await;
+
+    let Path(index) =
+        index_maybe.map_err(|e| not_found_html_response(state, Some(e.to_string())))?;
 
     let digest = match state
         .rpc_client
         .utxo_digest(context::current(), index)
         .await
-        .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?
+        .map_err(|e| not_found_html_response(state, Some(e.to_string())))?
     {
         Some(digest) => digest,
         None => {
             return Err(not_found_html_response(
-                State(state.clone()),
+                state,
                 Some("The requested UTXO does not exist".to_string()),
             ))
         }
     };
 
-    let header = HeaderHtml {
-        state: state.clone(),
-    };
+    let header = HeaderHtml { state };
 
     let utxo_page = UtxoHtmlPage {
         index,

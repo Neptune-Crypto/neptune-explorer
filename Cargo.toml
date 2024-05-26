@@ -26,6 +26,8 @@ html-escaper = "0.2.0"
 tower-http = { version = "0.5.2", features = ["fs"] }
 readonly = "0.2.12"
 url = "2.5.0"
+lettre = {version = "0.11.7", features = ["tokio1-native-tls"]}
+chrono = "0.4.34"
 
 # only should be used inside main.rs, for the binary.
 anyhow = "1.0.86"

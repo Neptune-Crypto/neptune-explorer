@@ -20,5 +20,5 @@ pub fn not_found_html_handler(html: Html<String>) -> (StatusCode, Html<String>) 
 }
 
 pub fn rpc_err(e: RpcError) -> Response {
-    (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response()
+    (StatusCode::INTERNAL_SERVER_ERROR, format!("{:?}", e)).into_response()
 }

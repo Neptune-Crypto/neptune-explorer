@@ -16,6 +16,8 @@ pub async fn block_digest(
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<Digest>, impl IntoResponse> {
     match state
+        .read()
+        .await
         .rpc_client
         .block_digest(context::current(), selector.into())
         .await

@@ -16,6 +16,8 @@ pub async fn block_info(
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<BlockInfo>, Response> {
     let block_info = state
+        .read()
+        .await
         .rpc_client
         .block_info(context::current(), selector.into())
         .await

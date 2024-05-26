@@ -17,6 +17,8 @@ pub async fn utxo_digest(
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<Digest>, impl IntoResponse> {
     match state
+        .read()
+        .await
         .rpc_client
         .utxo_digest(context::current(), index)
         .await

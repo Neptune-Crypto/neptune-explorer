@@ -1,5 +1,6 @@
 use crate::html::page::not_found::not_found_html_response;
 use crate::model::app_state::AppState;
+use crate::model::app_state::AppStateInner;
 use axum::extract::State;
 use axum::response::Html;
 use axum::response::Response;
@@ -9,19 +10,21 @@ use std::sync::Arc;
 use tarpc::context;
 
 #[axum::debug_handler]
-pub async fn root(State(state): State<Arc<AppState>>) -> Result<Html<String>, Response> {
+pub async fn root(State(state_rw): State<Arc<AppState>>) -> Result<Html<String>, Response> {
     #[derive(boilerplate::Boilerplate)]
     #[boilerplate(filename = "web/html/page/root.html")]
-    pub struct RootHtmlPage {
+    pub struct RootHtmlPage<'a> {
         tip_height: BlockHeight,
-        state: Arc<AppState>,
+        state: &'a AppStateInner,
     }
+
+    let state = &*state_rw.read().await;
 
     let tip_height = state
         .rpc_client
         .block_height(context::current())
         .await
-        .map_err(|e| not_found_html_response(State(state.clone()), Some(e.to_string())))?;
+        .map_err(|e| not_found_html_response(state, Some(e.to_string())))?;
 
     let root_page = RootHtmlPage { tip_height, state };
     Ok(Html(root_page.to_string()))

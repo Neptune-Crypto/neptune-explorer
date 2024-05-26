@@ -1,50 +1,54 @@
 use anyhow::Context;
 use axum::routing::get;
 use axum::routing::Router;
-use clap::Parser;
-use neptune_core::models::blockchain::block::block_selector::BlockSelector;
-use neptune_core::rpc_server::RPCClient;
+use neptune_explorer::alert_email;
 use neptune_explorer::html::page::block::block_page;
 use neptune_explorer::html::page::not_found::not_found_html_fallback;
 use neptune_explorer::html::page::redirect_qs_to_path::redirect_query_string_to_path;
 use neptune_explorer::html::page::root::root;
 use neptune_explorer::html::page::utxo::utxo_page;
 use neptune_explorer::model::app_state::AppState;
-use neptune_explorer::model::config::Config;
+use neptune_explorer::neptune_rpc;
 use neptune_explorer::rpc::block_digest::block_digest;
 use neptune_explorer::rpc::block_info::block_info;
 use neptune_explorer::rpc::utxo_digest::utxo_digest;
-use std::net::Ipv4Addr;
-use std::net::SocketAddr;
-use std::sync::Arc;
-use tarpc::client;
-use tarpc::context;
-use tarpc::tokio_serde::formats::Json as RpcJson;
 use tower_http::services::ServeDir;
+use tracing::{info, warn};
+use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    let rpc_client = rpc_client()
-        .await
-        .with_context(|| "Failed to create RPC client")?;
-    let network = rpc_client
-        .network(context::current())
-        .await
-        .with_context(|| "Failed calling neptune-core api: network")?;
-    let genesis_digest = rpc_client
-        .block_digest(context::current(), BlockSelector::Genesis)
-        .await
-        .with_context(|| "Failed calling neptune-core api: block_digest")?
-        .with_context(|| "neptune-core failed to provide a genesis block")?;
+    let filter = EnvFilter::from_default_env()
+        // Set the base level when not matched by other directives to INFO.
+        .add_directive("neptune_explorer=info".parse()?);
 
-    let shared_state = Arc::new(AppState::from((
-        network,
-        Config::parse(),
-        rpc_client,
-        genesis_digest,
-    )));
+    tracing_subscriber::fmt().with_env_filter(filter).init();
 
-    let app = Router::new()
+    let app_state = AppState::init().await?;
+
+    let routes = setup_routes(app_state.clone());
+
+    let port = app_state.read().await.config.listen_port;
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}"))
+        .await
+        .with_context(|| format!("Failed to bind to port {port}"))?;
+
+    if !alert_email::can_send_alerts() {
+        warn!("alert emails disabled.  consider configuring smtp parameters.");
+    }
+
+    tokio::task::spawn(neptune_rpc::watchdog(app_state));
+
+    info!("Running on http://localhost:{port}");
+
+    axum::serve(listener, routes)
+        .await
+        .with_context(|| "Axum server encountered an error")?;
+    Ok(())
+}
+
+pub fn setup_routes(app_state: AppState) -> Router {
+    Router::new()
         // -- RPC calls --
         .route("/rpc/block_info/*selector", get(block_info))
         .route("/rpc/block_digest/*selector", get(block_digest))
@@ -65,34 +69,7 @@ async fn main() -> Result<(), anyhow::Error> {
             ServeDir::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/web/image")),
         )
         // handle route not-found
-        .fallback(not_found_html_fallback(shared_state.clone()))
+        .fallback(not_found_html_fallback)
         // add state
-        .with_state(shared_state);
-
-    let port = Config::parse().listen_port;
-    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}"))
-        .await
-        .with_context(|| format!("Failed to bind to port {port}"))?;
-
-    println!("Running on http://localhost:{port}");
-
-    axum::serve(listener, app)
-        .await
-        .with_context(|| "Axum server encountered an error")?;
-    Ok(())
-}
-
-async fn rpc_client() -> Result<RPCClient, anyhow::Error> {
-    // Create connection to neptune-core RPC server
-    let args: Config = Config::parse();
-    let server_socket = SocketAddr::new(
-        std::net::IpAddr::V4(Ipv4Addr::LOCALHOST),
-        args.neptune_rpc_port,
-    );
-    let transport = tarpc::serde_transport::tcp::connect(server_socket, RpcJson::default)
-        .await
-        .with_context(|| {
-            format!("Failed to connect to neptune-core rpc service at {server_socket}")
-        })?;
-    Ok(RPCClient::new(client::Config::default(), transport).spawn())
+        .with_state(app_state.into())
 }
