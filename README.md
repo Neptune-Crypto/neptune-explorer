@@ -10,6 +10,14 @@ Some [design notes](./doc/design_notes.md) are available.
 
 ### Compile from Source -- Linux Debian/Ubuntu
 
+You may need to:
+
+```
+sudo apt install pkg-config libssl-dev
+```
+
+Then
+
 ```
 git clone https://github.com/Neptune-Crypto/neptune-explorer.git
 cd neptune-explorer
