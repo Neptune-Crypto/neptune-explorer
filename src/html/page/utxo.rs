@@ -25,7 +25,7 @@ pub async fn utxo_page(
         digest: Digest,
     }
 
-    let state = &*state_rw.read().await;
+    let state = &state_rw.load();
 
     let Path(index) =
         index_maybe.map_err(|e| not_found_html_response(state, Some(e.to_string())))?;

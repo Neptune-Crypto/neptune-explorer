@@ -24,7 +24,7 @@ pub async fn block_page(
         header: HeaderHtml<'a>,
         block_info: BlockInfo,
     }
-    let state = &*state_rw.read().await;
+    let state = &state_rw.load();
 
     let Path(block_selector) =
         user_input_maybe.map_err(|e| not_found_html_response(state, Some(e.to_string())))?;

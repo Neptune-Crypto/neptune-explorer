@@ -15,7 +15,7 @@ pub async fn send(
     subject: &str,
     body: String,
 ) -> std::result::Result<bool, anyhow::Error> {
-    match state.read().await.config.alert_config() {
+    match state.load().config.alert_config() {
         None => {
             warn!("Alert emails disabled.  alert not sent.  consider confiuring smtp parameters.  subject: {subject}");
             Ok(false)

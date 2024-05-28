@@ -76,7 +76,7 @@ pub async fn redirect_query_string_to_path(
     RawQuery(raw_query_option): RawQuery,
     State(state_rw): State<Arc<AppState>>,
 ) -> Result<Response, Response> {
-    let state = &*state_rw.read().await;
+    let state = &state_rw.load();
 
     let not_found = || not_found_html_response(state, None);
 

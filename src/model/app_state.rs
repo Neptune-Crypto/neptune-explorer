@@ -1,13 +1,13 @@
 use crate::model::config::Config;
 use crate::neptune_rpc;
 use anyhow::Context;
+use arc_swap::ArcSwap;
 use clap::Parser;
 use neptune_core::config_models::network::Network;
 use neptune_core::models::blockchain::block::block_selector::BlockSelector;
 use neptune_core::prelude::twenty_first::math::digest::Digest;
 use neptune_core::rpc_server::RPCClient;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 
 pub struct AppStateInner {
     pub network: Network,
@@ -17,10 +17,10 @@ pub struct AppStateInner {
 }
 
 #[derive(Clone)]
-pub struct AppState(Arc<RwLock<AppStateInner>>);
+pub struct AppState(Arc<ArcSwap<AppStateInner>>);
 
 impl std::ops::Deref for AppState {
-    type Target = Arc<RwLock<AppStateInner>>;
+    type Target = Arc<ArcSwap<AppStateInner>>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -31,7 +31,7 @@ impl From<(Network, Config, RPCClient, Digest)> for AppState {
     fn from(
         (network, config, rpc_client, genesis_digest): (Network, Config, RPCClient, Digest),
     ) -> Self {
-        Self(Arc::new(RwLock::new(AppStateInner {
+        Self(Arc::new(ArcSwap::from_pointee(AppStateInner {
             network,
             config,
             rpc_client,
@@ -61,5 +61,28 @@ impl AppState {
             rpc_client,
             genesis_digest,
         )))
+    }
+
+    /// Sets the rpc_client
+    ///
+    /// This method exists because it is sometimes necessary
+    /// to re-establish connection to the neptune RPC server.
+    ///
+    /// This is achieved via ArcSwap which is faster than
+    /// RwLock for our use-case that is heavy reads and few
+    /// if any mutations.  ArcSwap is effectively lock-free.
+    ///
+    /// Note that this method takes &self, so interior
+    /// mutability occurs.
+    pub fn set_rpc_client(&self, rpc_client: RPCClient) {
+        let inner = self.0.load();
+
+        let new_inner = AppStateInner {
+            rpc_client,
+            network: inner.network,
+            config: inner.config.clone(),
+            genesis_digest: inner.genesis_digest,
+        };
+        self.0.store(Arc::new(new_inner));
     }
 }

@@ -42,7 +42,7 @@ pub async fn watchdog(app_state: AppState) {
     let app_started = chrono::offset::Utc::now();
     let mut was_connected = true;
     let mut since = chrono::offset::Utc::now();
-    let watchdog_secs = app_state.read().await.config.neptune_rpc_watchdog_secs;
+    let watchdog_secs = app_state.load().config.neptune_rpc_watchdog_secs;
 
     debug!("neptune-core rpc watchdog started");
 
@@ -50,8 +50,7 @@ pub async fn watchdog(app_state: AppState) {
         tokio::time::sleep(tokio::time::Duration::from_secs(watchdog_secs)).await;
 
         let result = app_state
-            .read()
-            .await
+            .load()
             .rpc_client
             .network(context::current())
             .await;
@@ -94,8 +93,7 @@ pub async fn watchdog(app_state: AppState) {
 
         if !now_connected {
             if let Ok(c) = gen_rpc_client().await {
-                let mut state = app_state.write().await;
-                state.rpc_client = c;
+                app_state.set_rpc_client(c);
             }
         }
     }

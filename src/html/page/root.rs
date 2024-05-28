@@ -18,7 +18,7 @@ pub async fn root(State(state_rw): State<Arc<AppState>>) -> Result<Html<String>,
         state: &'a AppStateInner,
     }
 
-    let state = &*state_rw.read().await;
+    let state = &state_rw.load();
 
     let tip_height = state
         .rpc_client

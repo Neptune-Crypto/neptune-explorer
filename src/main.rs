@@ -28,7 +28,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let routes = setup_routes(app_state.clone());
 
-    let port = app_state.read().await.config.listen_port;
+    let port = app_state.load().config.listen_port;
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}"))
         .await
         .with_context(|| format!("Failed to bind to port {port}"))?;
