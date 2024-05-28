@@ -14,8 +14,8 @@
     clap::ArgGroup::new("value")
         .required(false)
         .multiple(true)
-        .requires_all(&["admin_email", "smtp_host", "smtp_user", "smtp_pass", "smtp_from_email"])
-        .args(&["admin_email", "smtp_host", "smtp_user", "smtp_pass", "smtp_from_email"])
+        .requires_all(&["admin_email", "smtp_host", "smtp_port", "smtp_user", "smtp_pass", "smtp_from_email"])
+        .args(&["admin_email", "smtp_host", "smtp_port", "smtp_user", "smtp_pass", "smtp_from_email"])
 ))]
 pub struct Config {
     /// Sets the website name
@@ -46,6 +46,10 @@ pub struct Config {
     #[arg(long, value_name = "host")]
     pub smtp_host: Option<String>,
 
+    /// smtp port for alert emails
+    #[arg(long, value_name = "port", default_value = "25")]
+    pub smtp_port: Option<u16>,
+
     /// smtp username for alert emails
     #[arg(long, value_name = "user")]
     pub smtp_user: Option<String>,
@@ -68,6 +72,7 @@ impl Config {
         match (
             &self.admin_email,
             &self.smtp_host,
+            &self.smtp_port,
             &self.smtp_user,
             &self.smtp_pass,
             &self.smtp_from_email,
@@ -76,6 +81,7 @@ impl Config {
             (
                 Some(admin_email),
                 Some(smtp_host),
+                Some(smtp_port),
                 Some(smtp_user),
                 Some(smtp_pass),
                 Some(smtp_from_email),
@@ -83,6 +89,7 @@ impl Config {
             ) => Some(AlertConfig {
                 admin_email: admin_email.clone(),
                 smtp_host: smtp_host.clone(),
+                smtp_port: *smtp_port,
                 smtp_user: smtp_user.clone(),
                 smtp_pass: smtp_pass.clone(),
                 smtp_from_email: smtp_from_email.clone(),
@@ -101,6 +108,9 @@ pub struct AlertConfig {
     /// smtp host for alert emails
     pub smtp_host: String,
 
+    /// smtp host for alert emails
+    pub smtp_port: u16,
+
     /// smtp username for alert emails
     pub smtp_user: String,
 
@@ -115,10 +125,18 @@ pub struct AlertConfig {
 }
 
 #[derive(Debug, Clone, clap::ValueEnum)]
+/// Determines SMTP encryption mode.
+/// See: https://docs.rs/lettre/0.11.7/lettre/transport/smtp/struct.AsyncSmtpTransport.html#method.from_url
 pub enum SmtpMode {
     /// smtps
     Smtps,
 
-    /// starttls
+    /// starttls required
     Starttls,
+
+    /// use starttls if available.  insecure.
+    Opportunistic,
+
+    /// plain text.  insecure.
+    Plaintext,
 }

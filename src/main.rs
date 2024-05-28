@@ -13,7 +13,7 @@ use neptune_explorer::rpc::block_digest::block_digest;
 use neptune_explorer::rpc::block_info::block_info;
 use neptune_explorer::rpc::utxo_digest::utxo_digest;
 use tower_http::services::ServeDir;
-use tracing::{info, warn};
+use tracing::info;
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
@@ -33,9 +33,8 @@ async fn main() -> Result<(), anyhow::Error> {
         .await
         .with_context(|| format!("Failed to bind to port {port}"))?;
 
-    if !alert_email::can_send_alerts() {
-        warn!("alert emails disabled.  consider configuring smtp parameters.");
-    }
+    // this will log warnings if smtp not configured or mis-configured.
+    alert_email::check_alert_params();
 
     tokio::task::spawn(neptune_rpc::watchdog(app_state));
 
