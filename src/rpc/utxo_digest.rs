@@ -2,7 +2,7 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::response::Json;
-use neptune_core::prelude::twenty_first::math::digest::Digest;
+use neptune_cash::prelude::twenty_first::math::digest::Digest;
 use std::sync::Arc;
 use tarpc::context;
 

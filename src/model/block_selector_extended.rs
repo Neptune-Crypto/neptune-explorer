@@ -1,6 +1,6 @@
 use super::height_or_digest::HeightOrDigest;
-use neptune_core::models::blockchain::block::block_selector::BlockSelector;
-use neptune_core::models::blockchain::block::block_selector::BlockSelectorParseError;
+use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
+use neptune_cash::models::blockchain::block::block_selector::BlockSelectorParseError;
 use serde::de::Error;
 use serde::Deserialize;
 use serde::Deserializer;

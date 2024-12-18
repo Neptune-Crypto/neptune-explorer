@@ -5,7 +5,7 @@ use axum::extract::State;
 use axum::response::Html;
 use axum::response::Response;
 use html_escaper::Escape;
-use neptune_core::models::blockchain::block::block_height::BlockHeight;
+use neptune_cash::models::blockchain::block::block_height::BlockHeight;
 use std::sync::Arc;
 use tarpc::context;
 

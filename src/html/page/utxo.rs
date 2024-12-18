@@ -8,7 +8,7 @@ use axum::response::Html;
 use axum::response::Response;
 use html_escaper::Escape;
 use html_escaper::Trusted;
-use neptune_core::prelude::tasm_lib::Digest;
+use neptune_cash::prelude::tasm_lib::Digest;
 use std::sync::Arc;
 use tarpc::context;
 

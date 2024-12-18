@@ -1,7 +1,7 @@
-use neptune_core::models::blockchain::block::block_height::BlockHeight;
-use neptune_core::models::blockchain::block::block_selector::BlockSelector;
-use neptune_core::models::blockchain::block::block_selector::BlockSelectorParseError;
-use neptune_core::prelude::tasm_lib::Digest;
+use neptune_cash::models::blockchain::block::block_height::BlockHeight;
+use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
+use neptune_cash::models::blockchain::block::block_selector::BlockSelectorParseError;
+use neptune_cash::prelude::tasm_lib::Digest;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 

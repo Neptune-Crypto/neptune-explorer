@@ -13,8 +13,8 @@ tokio = { version = "1.37.0", features = ["full", "tracing"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 
-# 1f4afb0c000e60f976a15a990414349d17207524 = betanet
-neptune-core = {git = "https://github.com/Neptune-Crypto/neptune-core.git", rev = "1f4afb0c000e60f976a15a990414349d17207524"}
+# dbc660634c27cdd2c65ed760dadc123c244d6cd1 = betanet
+neptune-cash = {git = "https://github.com/Neptune-Crypto/neptune-core.git", rev = "dbc660634c27cdd2c65ed760dadc123c244d6cd1"}
 tarpc = { version = "^0.34", features = [
     "tokio1",
     "serde-transport",

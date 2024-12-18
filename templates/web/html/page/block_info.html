@@ -28,6 +28,22 @@
             <td class="mono">{{self.block_info.digest.to_hex()}}</td>
         </tr>
         <tr>
+            <td>Canonical
+<span class="tooltip">🛈
+    <span class="tooltiptext">
+        The canonical blockchain is the chain with the most accumulated proof-of-work and is considered the official record of transaction history.
+    </span>
+</span>
+            </td>
+            <td>
+%% if self.block_info.is_canonical {
+This block is a link in the canonical blockchain.
+%% } else {
+This block is not in the canonical blockchain.
+%% }
+            </td>
+        </tr>
+        <tr>
             <td>Created</td>
             <td>{{self.block_info.timestamp.standard_format()}}</td>
         </tr>

@@ -9,7 +9,7 @@ use axum::response::Html;
 use axum::response::Response;
 use html_escaper::Escape;
 use html_escaper::Trusted;
-use neptune_core::models::blockchain::block::block_info::BlockInfo;
+use neptune_cash::models::blockchain::block::block_info::BlockInfo;
 use std::sync::Arc;
 use tarpc::context;
 

@@ -3,10 +3,10 @@ use crate::neptune_rpc;
 use anyhow::Context;
 use arc_swap::ArcSwap;
 use clap::Parser;
-use neptune_core::config_models::network::Network;
-use neptune_core::models::blockchain::block::block_selector::BlockSelector;
-use neptune_core::prelude::twenty_first::math::digest::Digest;
-use neptune_core::rpc_server::RPCClient;
+use neptune_cash::config_models::network::Network;
+use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
+use neptune_cash::prelude::twenty_first::math::digest::Digest;
+use neptune_cash::rpc_server::RPCClient;
 use std::sync::Arc;
 
 pub struct AppStateInner {
