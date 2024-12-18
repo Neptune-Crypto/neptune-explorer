@@ -1948,7 +1948,7 @@ dependencies = [
 [[package]]
 name = "neptune-cash"
 version = "0.0.10"
-source = "git+https://github.com/Neptune-Crypto/neptune-core.git?rev=dbc660634c27cdd2c65ed760dadc123c244d6cd1#dbc660634c27cdd2c65ed760dadc123c244d6cd1"
+source = "git+https://github.com/Neptune-Crypto/neptune-core.git?rev=74853d165d1def59ebb799d4679b522acd28116a#74853d165d1def59ebb799d4679b522acd28116a"
 dependencies = [
  "aead",
  "aes-gcm",
@@ -2021,6 +2021,7 @@ dependencies = [
  "html-escaper",
  "lettre",
  "neptune-cash",
+ "rand",
  "readonly",
  "serde",
  "serde_json",

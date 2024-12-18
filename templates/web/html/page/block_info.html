@@ -28,22 +28,6 @@
             <td class="mono">{{self.block_info.digest.to_hex()}}</td>
         </tr>
         <tr>
-            <td>Canonical
-<span class="tooltip">🛈
-    <span class="tooltiptext">
-        The canonical blockchain is the chain with the most accumulated proof-of-work and is considered the official record of transaction history.
-    </span>
-</span>
-            </td>
-            <td>
-%% if self.block_info.is_canonical {
-This block is a link in the canonical blockchain.
-%% } else {
-This block is not in the canonical blockchain.
-%% }
-            </td>
-        </tr>
-        <tr>
             <td>Created</td>
             <td>{{self.block_info.timestamp.standard_format()}}</td>
         </tr>
@@ -67,6 +51,38 @@ This block is not in the canonical blockchain.
             <td>Fee</td>
             <td>{{self.block_info.fee}}</td>
         </tr>
+        <tr>
+            <td>Canonical
+                <span class="tooltip">🛈
+                    <span class="tooltiptext">
+                        The canonical blockchain is the chain with the most accumulated proof-of-work and is considered the
+                        official record of transaction history.
+                    </span>
+                </span>
+            </td>
+            <td>
+                %% if self.block_info.is_canonical {
+                This block is in the canonical blockchain.
+                %% } else {
+                This block is not in the canonical blockchain.
+                %% }
+            </td>
+        </tr>
+        <tr>
+            <td>Sibling Blocks
+                <span class="tooltip">🛈
+                    <span class="tooltiptext">
+                        Blocks that exist at the same height as this block. Only one sibling can be in the canonical blockchain.
+                    </span>
+                </span>
+            </td>
+            <td class="mono">
+%% for sibling_digest in self.block_info.sibling_blocks.iter().map(|d| d.to_hex()) {
+<a href='/block/digest/{{sibling_digest}}'>{{sibling_digest}}</a><br/>
+%% }
+            </td>
+        </tr>
+
     </table>
 
 </article>
