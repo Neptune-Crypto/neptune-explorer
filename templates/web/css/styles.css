@@ -58,6 +58,7 @@ div.indent {
     display: inline-block;
     bottom: 0.1em;
     transition: 0s;
+    font-weight: bold;
 }
 
 /* Tooltip text */
@@ -73,6 +74,7 @@ div.indent {
     padding: 5px;
     border-radius: 6px;
     border: solid 1px rgb(1, 220, 220);
+    font-weight: normal;
 
     /* Position the tooltip text - see examples below! */
     position: absolute;

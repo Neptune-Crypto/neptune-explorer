@@ -44,16 +44,38 @@
             <td>{{self.block_info.difficulty}}</td>
         </tr>
         <tr>
-            <td>Mining Reward</td>
-            <td>{{self.block_info.mining_reward}}</td>
+            <td>Cumulative Proof-Of-Work
+                <span class="tooltip">ⓘ
+                    <span class="tooltiptext">estimated total # of hashes performed by miners from genesis block to this block.</span>
+                </span>
+            </td>
+            <td>{{self.block_info.cumulative_proof_of_work}}</td>
         </tr>
+        <tr>
+            <td>Coinbase
+                <span class="tooltip">ⓘ
+                    <span class="tooltiptext">Total block reward amount paid to the miner(s) that found this block.</span>
+                </span>
+            </td>
+            <td>{{self.block_info.coinbase_amount}}</td>
+        </tr>
+%% if self.block_info.coinbase_amount != self.block_info.expected_coinbase_amount() {
+        <tr>
+            <td>Expected Coinbase
+                <span class="tooltip">ⓘ
+                    <span class="tooltiptext">Expected (maximum) block reward amount paid to the miner(s) that find a block at this block-height.</span>
+                </span>
+            </td>
+            <td>{{self.block_info.expected_coinbase_amount()}}</td>
+        </tr>
+%% }
         <tr>
             <td>Fee</td>
             <td>{{self.block_info.fee}}</td>
         </tr>
         <tr>
             <td>Canonical
-                <span class="tooltip">🛈
+                <span class="tooltip">ⓘ
                     <span class="tooltiptext">
                         The canonical blockchain is the chain with the most accumulated proof-of-work and is considered the
                         official record of transaction history.
@@ -62,15 +84,15 @@
             </td>
             <td>
                 %% if self.block_info.is_canonical {
-                This block is in the canonical blockchain.
+                Yes.  This block is in the canonical blockchain.
                 %% } else {
-                This block is not in the canonical blockchain.
+                No.  This block is not in the canonical blockchain.
                 %% }
             </td>
         </tr>
         <tr>
             <td>Sibling Blocks
-                <span class="tooltip">🛈
+                <span class="tooltip">ⓘ
                     <span class="tooltiptext">
                         Blocks that exist at the same height as this block. Only one sibling can be in the canonical blockchain.
                     </span>
