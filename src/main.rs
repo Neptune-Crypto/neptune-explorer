@@ -36,7 +36,8 @@ async fn main() -> Result<(), anyhow::Error> {
     // this will log warnings if smtp not configured or mis-configured.
     alert_email::check_alert_params();
 
-    tokio::task::spawn(neptune_rpc::watchdog(app_state));
+    tokio::task::spawn(neptune_rpc::watchdog(app_state.clone()));
+    tokio::task::spawn(neptune_rpc::blockchain_watchdog(app_state));
 
     info!("Running on http://localhost:{port}");
 

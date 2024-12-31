@@ -38,6 +38,10 @@ pub struct Config {
     #[clap(long, default_value = "10", value_name = "seconds")]
     pub neptune_rpc_watchdog_secs: u64,
 
+    /// Sets interval in seconds to check that block-height has increased
+    #[clap(long, default_value = "3600", value_name = "seconds")]
+    pub neptune_blockchain_watchdog_secs: u64,
+
     /// admin email for receiving alert emails
     #[arg(long, value_name = "email")]
     pub admin_email: Option<String>,

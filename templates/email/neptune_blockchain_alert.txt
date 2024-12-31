@@ -1,0 +1,64 @@
+%% if matches!(self.blockchain_state, BlockchainState::Normal) {
+**** ALERT: Neptune Blockchain Height Recovery ****
+%% } else {
+**** ALERT: Neptune Blockchain Height Possible Outage ****
+%% }
+
+site: {{self.config.site_name}} at {{self.config.site_domain}}:{{self.config.listen_port}}
+
+-- Details --
+
+Event: Neptune Blockchain Height Monitor Status Change.
+
+Event Time: {{self.now.to_rfc3339()}}
+
+Event Description:
+
+%% if matches!(self.blockchain_state, BlockchainState::Normal) {
+The present block height is greater than the height at last check.  Service is restored.
+%% } else if self.last_height == self.height {
+The present block height is equal to the height at last check.
+This may indicate a problem with neptune-core.
+%% } else {
+The present block height is less than the height at last check.
+This may indicate a problem with neptune-core.
+%% }
+
+New Status:
+    blockchain monitor: {{self.blockchain_state}}
+    last_height: {{self.last_height}}
+    height: {{self.height}}
+    Now: {{self.now.to_rfc3339()}}
+
+Previous Status:
+    blockchain monitor: {{self.last_blockchain_state}}
+    Since: {{self.since.to_rfc3339()}}
+    Duration: {{self.duration}}
+
+Block Explorer Uptime:
+    Started: {{self.app_started.to_rfc3339()}}
+    Duration: {{self.app_duration}} seconds
+
+Neptune-core RPC:
+    Host: {{self.config.site_domain}}   (localhost)
+    Port: {{self.config.neptune_rpc_port}}
+
+Recommended action:
+
+%% if matches!(self.blockchain_state, BlockchainState::Normal) {
+    Check neptune-core logs to ensure it is operating correctly.
+
+    No further corrective action should be necessary.
+%% } else {
+    If only one hour has passed since the last block:
+
+        1. It is possible/likely that a block simply has not been found yet.
+        2. Check neptune-core logs to ensure it is operating correctly.
+        3. Check other nodes to ensure they are at the same block height.
+
+    if two or more hours have passed since the last block:
+        1. Check neptune-core logs to ensure it is operating correctly.
+        2. Check other nodes to ensure they are at the same block height.
+        3. Consider restarting neptune-core
+        4. Consider filing an issue, or alerting neptune-core developers.
+%% }
