@@ -25,6 +25,9 @@ pub fn rpc_err(e: TarpcError) -> Response {
 }
 
 pub fn rpc_method_err(e: RpcError) -> Response {
-    // todo: handle auth variant.
-    (StatusCode::BAD_REQUEST, format!("{:?}", e)).into_response()
+    let status_code = match e {
+        RpcError::Auth(_) => StatusCode::UNAUTHORIZED,
+        _ => StatusCode::BAD_REQUEST,
+    };
+    (status_code, format!("{:?}", e)).into_response()
 }
