@@ -1,4 +1,5 @@
 use crate::html::page::not_found::not_found_html_response;
+use crate::http_util::rpc_method_err;
 use crate::model::app_state::AppState;
 use crate::model::app_state::AppStateInner;
 use axum::extract::State;
@@ -22,9 +23,10 @@ pub async fn root(State(state_rw): State<Arc<AppState>>) -> Result<Html<String>,
 
     let tip_height = state
         .rpc_client
-        .block_height(context::current())
+        .block_height(context::current(), state.token())
         .await
-        .map_err(|e| not_found_html_response(state, Some(e.to_string())))?;
+        .map_err(|e| not_found_html_response(state, Some(e.to_string())))?
+        .map_err(rpc_method_err)?;
 
     let root_page = RootHtmlPage { tip_height, state };
     Ok(Html(root_page.to_string()))

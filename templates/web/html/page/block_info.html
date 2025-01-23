@@ -118,7 +118,7 @@
 %% if self.block_info.is_genesis {
         | Previous Block
 %% } else {
-        | <a href='/block/height/{{self.block_info.height.previous()}}'>Previous Block</a>
+        | <a href='/block/height/{{self.block_info.height.previous().unwrap()}}'>Previous Block</a>
 %% }
 
 %% if self.block_info.is_tip {

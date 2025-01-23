@@ -1,5 +1,6 @@
 use crate::html::component::header::HeaderHtml;
 use crate::html::page::not_found::not_found_html_response;
+use crate::http_util::rpc_method_err;
 use crate::model::app_state::AppState;
 use axum::extract::rejection::PathRejection;
 use axum::extract::Path;
@@ -8,7 +9,7 @@ use axum::response::Html;
 use axum::response::Response;
 use html_escaper::Escape;
 use html_escaper::Trusted;
-use neptune_cash::prelude::tasm_lib::Digest;
+use neptune_cash::prelude::tasm_lib::prelude::Digest;
 use std::sync::Arc;
 use tarpc::context;
 
@@ -32,9 +33,10 @@ pub async fn utxo_page(
 
     let digest = match state
         .rpc_client
-        .utxo_digest(context::current(), index)
+        .utxo_digest(context::current(), state.token(), index)
         .await
         .map_err(|e| not_found_html_response(state, Some(e.to_string())))?
+        .map_err(rpc_method_err)?
     {
         Some(digest) => digest,
         None => {

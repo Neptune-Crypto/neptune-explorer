@@ -1,5 +1,6 @@
 use crate::http_util::not_found_err;
 use crate::http_util::rpc_err;
+use crate::http_util::rpc_method_err;
 use crate::model::app_state::AppState;
 use crate::model::block_selector_extended::BlockSelectorExtended;
 use axum::extract::Path;
@@ -15,12 +16,13 @@ pub async fn block_info(
     Path(selector): Path<BlockSelectorExtended>,
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<BlockInfo>, Response> {
-    let block_info = state
-        .load()
+    let s = state.load();
+    let block_info = s
         .rpc_client
-        .block_info(context::current(), selector.into())
+        .block_info(context::current(), s.token(), selector.into())
         .await
         .map_err(rpc_err)?
+        .map_err(rpc_method_err)?
         .ok_or_else(not_found_err)?;
 
     Ok(Json(block_info))

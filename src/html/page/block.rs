@@ -1,5 +1,6 @@
 use crate::html::component::header::HeaderHtml;
 use crate::html::page::not_found::not_found_html_response;
+use crate::http_util::rpc_method_err;
 use crate::model::app_state::AppState;
 use crate::model::block_selector_extended::BlockSelectorExtended;
 use axum::extract::rejection::PathRejection;
@@ -31,9 +32,10 @@ pub async fn block_page(
 
     let block_info = match state
         .rpc_client
-        .block_info(context::current(), block_selector.into())
+        .block_info(context::current(), state.token(), block_selector.into())
         .await
         .map_err(|e| not_found_html_response(state, Some(e.to_string())))?
+        .map_err(rpc_method_err)?
     {
         Some(info) => Ok(info),
         None => Err(not_found_html_response(

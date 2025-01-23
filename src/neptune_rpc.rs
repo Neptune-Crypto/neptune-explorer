@@ -6,7 +6,11 @@ use chrono::DateTime;
 use chrono::TimeDelta;
 use chrono::Utc;
 use clap::Parser;
+use neptune_cash::config_models::data_directory::DataDirectory;
+use neptune_cash::config_models::network::Network;
 use neptune_cash::models::blockchain::block::block_height::BlockHeight;
+use neptune_cash::rpc_auth;
+use neptune_cash::rpc_server::error::RpcError;
 use neptune_cash::rpc_server::RPCClient;
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;
@@ -14,6 +18,38 @@ use tarpc::client;
 use tarpc::context;
 use tarpc::tokio_serde::formats::Json as RpcJson;
 use tracing::{debug, info, warn};
+
+pub struct AuthenticatedClient {
+    pub client: RPCClient,
+    pub token: rpc_auth::Token,
+    pub network: Network,
+}
+
+impl std::ops::Deref for AuthenticatedClient {
+    type Target = RPCClient;
+
+    fn deref(&self) -> &Self::Target {
+        &self.client
+    }
+}
+
+/// generates RPCClient, for querying neptune-core RPC server.
+pub async fn gen_authenticated_rpc_client() -> Result<AuthenticatedClient, anyhow::Error> {
+    let client = gen_rpc_client().await?;
+
+    let rpc_auth::CookieHint {
+        data_directory,
+        network,
+    } = get_cookie_hint(&client, &None).await?;
+
+    let token: rpc_auth::Token = rpc_auth::Cookie::try_load(&data_directory).await?.into();
+
+    Ok(AuthenticatedClient {
+        client,
+        token,
+        network,
+    })
+}
 
 /// generates RPCClient, for querying neptune-core RPC server.
 pub async fn gen_rpc_client() -> Result<RPCClient, anyhow::Error> {
@@ -29,6 +65,41 @@ pub async fn gen_rpc_client() -> Result<RPCClient, anyhow::Error> {
             format!("Failed to connect to neptune-core rpc service at {server_socket}")
         })?;
     Ok(RPCClient::new(client::Config::default(), transport).spawn())
+}
+
+// returns result with a CookieHint{ data_directory, network }.
+//
+// We use the data-dir provided by user if present.
+//
+// Otherwise we call cookie_hint() RPC to obtain data-dir.
+// But the API might be disabled, which we detect and fallback to the default data-dir.
+async fn get_cookie_hint(
+    client: &RPCClient,
+    data_dir: &Option<std::path::PathBuf>,
+) -> anyhow::Result<rpc_auth::CookieHint> {
+    async fn fallback(
+        client: &RPCClient,
+        data_dir: &Option<std::path::PathBuf>,
+    ) -> anyhow::Result<rpc_auth::CookieHint> {
+        let network = client.network(context::current()).await??;
+        let data_directory = DataDirectory::get(data_dir.to_owned(), network)?;
+        Ok(rpc_auth::CookieHint {
+            data_directory,
+            network,
+        })
+    }
+
+    if data_dir.is_some() {
+        return fallback(client, data_dir).await;
+    }
+
+    let result = client.cookie_hint(context::current()).await?;
+
+    match result {
+        Ok(hint) => Ok(hint),
+        Err(RpcError::CookieHintDisabled) => fallback(client, data_dir).await,
+        Err(e) => Err(e.into()),
+    }
 }
 
 /// a tokio task that periodically pings neptune-core rpc server to ensure the
@@ -93,7 +164,7 @@ pub async fn watchdog(app_state: AppState) {
         }
 
         if !now_connected {
-            if let Ok(c) = gen_rpc_client().await {
+            if let Ok(c) = gen_authenticated_rpc_client().await {
                 app_state.set_rpc_client(c);
             }
         }
@@ -156,13 +227,14 @@ pub async fn blockchain_watchdog(app_state: AppState) {
     debug!("neptune-core blockchain watchdog started");
 
     loop {
-        let result = app_state
-            .load()
-            .rpc_client
-            .block_height(context::current())
-            .await;
+        let result = {
+            let s = app_state.load();
+            s.rpc_client
+                .block_height(context::current(), s.token())
+                .await
+        };
 
-        if let Ok(height) = result {
+        if let Ok(Ok(height)) = result {
             // send admin alert if there is a state change.
             let subject = match last_blockchain_state {
                 BlockchainState::Normal if height < last_height => {
@@ -215,8 +287,7 @@ pub async fn blockchain_watchdog(app_state: AppState) {
             // update state.
             last_height = height;
             since = chrono::offset::Utc::now();
-
-            tokio::time::sleep(tokio::time::Duration::from_secs(watchdog_secs)).await;
         }
+        tokio::time::sleep(tokio::time::Duration::from_secs(watchdog_secs)).await;
     }
 }

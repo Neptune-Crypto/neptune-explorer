@@ -6,14 +6,20 @@ use clap::Parser;
 use neptune_cash::config_models::network::Network;
 use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
 use neptune_cash::prelude::twenty_first::math::digest::Digest;
-use neptune_cash::rpc_server::RPCClient;
+use neptune_cash::rpc_auth;
 use std::sync::Arc;
 
 pub struct AppStateInner {
     pub network: Network,
     pub config: Config,
-    pub rpc_client: RPCClient,
+    pub rpc_client: neptune_rpc::AuthenticatedClient,
     pub genesis_digest: Digest,
+}
+
+impl AppStateInner {
+    pub fn token(&self) -> rpc_auth::Token {
+        self.rpc_client.token
+    }
 }
 
 #[derive(Clone)]
@@ -27,9 +33,14 @@ impl std::ops::Deref for AppState {
     }
 }
 
-impl From<(Network, Config, RPCClient, Digest)> for AppState {
+impl From<(Network, Config, neptune_rpc::AuthenticatedClient, Digest)> for AppState {
     fn from(
-        (network, config, rpc_client, genesis_digest): (Network, Config, RPCClient, Digest),
+        (network, config, rpc_client, genesis_digest): (
+            Network,
+            Config,
+            neptune_rpc::AuthenticatedClient,
+            Digest,
+        ),
     ) -> Self {
         Self(Arc::new(ArcSwap::from_pointee(AppStateInner {
             network,
@@ -42,21 +53,22 @@ impl From<(Network, Config, RPCClient, Digest)> for AppState {
 
 impl AppState {
     pub async fn init() -> Result<Self, anyhow::Error> {
-        let rpc_client = neptune_rpc::gen_rpc_client()
+        let rpc_client = neptune_rpc::gen_authenticated_rpc_client()
             .await
             .with_context(|| "Failed to create RPC client")?;
-        let network = rpc_client
-            .network(tarpc::context::current())
-            .await
-            .with_context(|| "Failed calling neptune-core api: network")?;
         let genesis_digest = rpc_client
-            .block_digest(tarpc::context::current(), BlockSelector::Genesis)
+            .block_digest(
+                tarpc::context::current(),
+                rpc_client.token,
+                BlockSelector::Genesis,
+            )
             .await
             .with_context(|| "Failed calling neptune-core api: block_digest")?
+            .with_context(|| "Failed calling neptune-core api method: block_digest")?
             .with_context(|| "neptune-core failed to provide a genesis block")?;
 
         Ok(Self::from((
-            network,
+            rpc_client.network,
             Config::parse(),
             rpc_client,
             genesis_digest,
@@ -74,12 +86,12 @@ impl AppState {
     ///
     /// Note that this method takes &self, so interior
     /// mutability occurs.
-    pub fn set_rpc_client(&self, rpc_client: RPCClient) {
+    pub fn set_rpc_client(&self, rpc_client: neptune_rpc::AuthenticatedClient) {
         let inner = self.0.load();
 
         let new_inner = AppStateInner {
+            network: rpc_client.network,
             rpc_client,
-            network: inner.network,
             config: inner.config.clone(),
             genesis_digest: inner.genesis_digest,
         };

@@ -10,11 +10,11 @@ axum = { version = "0.7.9", features = ["macros"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.115"
 tokio = { version = "1.37.0", features = ["full", "tracing"] }
-tracing = "0.1.40"
-tracing-subscriber = "0.3.18"
+tracing = "0.1"
+tracing-subscriber = "0.3"
 
-# 9602321148095f9991808780b406c1789f9a3a4f = betanet
-neptune-cash = {git = "https://github.com/Neptune-Crypto/neptune-core.git", rev = "9602321148095f9991808780b406c1789f9a3a4f"}
+# 89f5a1c2bb5f670071b71f2fef237c820e901f84 = 2025-01-22, almost to betanet-v2
+neptune-cash = {git = "https://github.com/Neptune-Crypto/neptune-core.git", rev = "89f5a1c2bb5f670071b71f2fef237c820e901f84"}
 tarpc = { version = "^0.34", features = [
     "tokio1",
     "serde-transport",
@@ -35,6 +35,9 @@ chrono = "0.4.34"
 anyhow = "1.0.86"
 arc-swap = "1.7.1"
 derive_more = { version = "1.0.0", features = ["display"] }
+
+# not a direct dep.  workaround for weird "could not resolve" cargo error
+indexmap = "2.7.0"
 
 [patch.crates-io]
 # 694f27daf78aade0ed0dc07e3babaab036cd5572 is tip of branch: master as of 2024-04-30

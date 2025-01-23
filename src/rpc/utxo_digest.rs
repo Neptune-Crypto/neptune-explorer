@@ -6,6 +6,7 @@ use neptune_cash::prelude::twenty_first::math::digest::Digest;
 use std::sync::Arc;
 use tarpc::context;
 
+use crate::http_util::rpc_method_err;
 use crate::{
     http_util::{not_found_err, rpc_err},
     model::app_state::AppState,
@@ -16,12 +17,13 @@ pub async fn utxo_digest(
     Path(index): Path<u64>,
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<Digest>, impl IntoResponse> {
-    match state
-        .load()
+    let s = state.load();
+    match s
         .rpc_client
-        .utxo_digest(context::current(), index)
+        .utxo_digest(context::current(), s.token(), index)
         .await
         .map_err(rpc_err)?
+        .map_err(rpc_method_err)?
     {
         Some(digest) => Ok(Json(digest)),
         None => Err(not_found_err()),

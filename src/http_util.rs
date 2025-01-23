@@ -2,7 +2,8 @@ use axum::http::StatusCode;
 use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::response::Response;
-use tarpc::client::RpcError;
+use neptune_cash::rpc_server::error::RpcError;
+use tarpc::client::RpcError as TarpcError;
 
 // note: http StatusCodes are defined at:
 // https://docs.rs/http/1.1.0/http/status/struct.StatusCode.html
@@ -19,6 +20,11 @@ pub fn not_found_html_handler(html: Html<String>) -> (StatusCode, Html<String>) 
     (StatusCode::NOT_FOUND, html)
 }
 
-pub fn rpc_err(e: RpcError) -> Response {
+pub fn rpc_err(e: TarpcError) -> Response {
     (StatusCode::INTERNAL_SERVER_ERROR, format!("{:?}", e)).into_response()
+}
+
+pub fn rpc_method_err(e: RpcError) -> Response {
+    // todo: handle auth variant.
+    (StatusCode::BAD_REQUEST, format!("{:?}", e)).into_response()
 }
