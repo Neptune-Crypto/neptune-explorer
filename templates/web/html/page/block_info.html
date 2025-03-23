@@ -32,6 +32,14 @@
             <td>{{self.block_info.timestamp.standard_format()}}</td>
         </tr>
         <tr>
+            <td>Size
+                <span class="tooltip">ⓘ
+                    <span class="tooltiptext">Unit: number of BFieldElements. One BFieldElement consists of 8 bytes.</span>
+                </span>
+            </td>
+            <td>{{self.block_info.size}}</td>
+        </tr>
+        <tr>
             <td>Inputs</td>
             <td>{{self.block_info.num_inputs}}<br /></td>
         </tr>
