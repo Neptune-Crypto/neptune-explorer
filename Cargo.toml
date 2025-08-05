@@ -13,8 +13,7 @@ tokio = { version = "1.37.0", features = ["full", "tracing"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 
-# 9d4901028784d5c083fb72029c52da4953b0f0c3 is tip of master on 2025-03-24
-neptune-cash = {git = "https://github.com/Neptune-Crypto/neptune-core.git", rev = "9d4901028784d5c083fb72029c52da4953b0f0c3"}
+neptune-cash = "0.3.0"
 tarpc = { version = "^0.34", features = [
     "tokio1",
     "serde-transport",

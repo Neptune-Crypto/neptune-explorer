@@ -21,7 +21,7 @@ pub fn not_found_html_handler(html: Html<String>) -> (StatusCode, Html<String>) 
 }
 
 pub fn rpc_err(e: TarpcError) -> Response {
-    (StatusCode::INTERNAL_SERVER_ERROR, format!("{:?}", e)).into_response()
+    (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")).into_response()
 }
 
 pub fn rpc_method_err(e: RpcError) -> Response {
@@ -29,5 +29,5 @@ pub fn rpc_method_err(e: RpcError) -> Response {
         RpcError::Auth(_) => StatusCode::UNAUTHORIZED,
         _ => StatusCode::BAD_REQUEST,
     };
-    (status_code, format!("{:?}", e)).into_response()
+    (status_code, format!("{e:?}")).into_response()
 }

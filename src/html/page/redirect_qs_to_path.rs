@@ -83,7 +83,7 @@ pub async fn redirect_query_string_to_path(
     let raw_query = raw_query_option.ok_or_else(not_found)?;
 
     // note: we construct a fake-url so we can use Url::query_pairs().
-    let fake_url = format!("http://127.0.0.1/?{}", raw_query);
+    let fake_url = format!("http://127.0.0.1/?{raw_query}");
     let url = url::Url::parse(&fake_url).map_err(|_| not_found())?;
     let query_vars: Vec<(String, _)> = url.query_pairs().into_owned().collect();
 

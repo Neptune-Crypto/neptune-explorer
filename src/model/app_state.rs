@@ -5,7 +5,7 @@ use arc_swap::ArcSwap;
 use clap::Parser;
 use neptune_cash::config_models::network::Network;
 use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
-use neptune_cash::prelude::twenty_first::math::digest::Digest;
+use neptune_cash::prelude::twenty_first::tip5::Digest;
 use neptune_cash::rpc_auth;
 use std::sync::Arc;
 

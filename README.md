@@ -1,6 +1,6 @@
 # neptune-explorer
 
-A web-based block explorer for the [Neptune blockchain](https://neptune.cash).  neptune-explorer provides a basic HTML view and a REST RPC API.
+A web-based block explorer for the [Neptune Cash blockchain](https://neptune.cash).  neptune-explorer provides a basic HTML view and a REST RPC API.
 
 As of 2024-05-22 this code is running at https://explorer.neptune.cash.
 
