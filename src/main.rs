@@ -3,6 +3,7 @@ use axum::routing::get;
 use axum::routing::post;
 use axum::routing::Router;
 use neptune_explorer::alert_email;
+use neptune_explorer::html::page::announcement::announcement_page;
 use neptune_explorer::html::page::block::block_page;
 use neptune_explorer::html::page::not_found::not_found_html_fallback;
 use neptune_explorer::html::page::redirect_qs_to_path::redirect_query_string_to_path;
@@ -62,6 +63,7 @@ pub fn setup_routes(app_state: AppState) -> Router {
         .route("/", get(root))
         .route("/block/*selector", get(block_page))
         .route("/utxo/:value", get(utxo_page))
+        .route("/announcement/*selector", get(announcement_page))
         // -- Rewrite query-strings to path --
         .route("/rqs", get(redirect_query_string_to_path))
         // -- Static files --

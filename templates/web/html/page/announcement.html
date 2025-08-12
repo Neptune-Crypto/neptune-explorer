@@ -1,0 +1,150 @@
+<html>
+
+<head>
+    <title>{{self.header.state.config.site_name}}: Announcement {{self.block_height}}/{{self.index}}</title>
+    {{html_escaper::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"),
+    "/templates/web/html/components/head.html")))}}
+</head>
+
+<body>
+    {{Trusted(self.header.to_string())}}
+
+    <main class="container">
+
+        <article>
+            <h2>Announcement
+            </h2>
+            <h3>
+                Metadata
+            </h3>
+            <table class="striped">
+                <tr>
+                    <td>Block Height</td>
+                    <td><a href='/block/digest/{{self.block_hash.to_hex()}}'>{{self.block_height}}</a></td>
+                </tr>
+                <tr>
+                    <td>Block Hash</td>
+                    <td class="mono"><a
+                            href='/block/digest/{{self.block_hash.to_hex()}}'>{{self.block_hash.to_hex()}}</a></td>
+                </tr>
+                <tr>
+                    <td>Index</td>
+                    <td>{{self.index}}/{{self.num_announcements}}</td>
+                </tr>
+                <tr>
+                    <td>Type</td>
+                    <td>{{self.announcement_type.name()}}</td>
+                </tr>
+            </table>
+            <h3>Payload</h3>
+            {% match &self.announcement_type { AnnouncementType::TransparentTxInfo(tx_info) => { %}
+            <details open>
+                <summary>Transparent Transaction Info</summary>
+                <table class="striped">
+                    <tr>
+                        <th colspan=2 style="font-weight: bold;">inputs</th>
+                    </tr>
+                    {% for input in tx_info.inputs.iter() { %}
+                    <tr>
+                        <td>
+                            <details>
+                                <summary>
+                                    <a
+                                        href='/utxo/{{input.aocl_leaf_index}}'>{{input.addition_record().canonical_commitment.to_hex()}}</a>
+                                </summary>
+                                <table>
+                                    <tr>
+                                        <td>UTXO digest:</td>
+                                        <td class="mono">{{Tip5::hash(&input.utxo).to_hex()}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>sender randomness:</td>
+                                        <td class="mono">{{input.sender_randomness.to_hex()}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>receiver preimage:</td>
+                                        <td class="mono">{{input.receiver_preimage.to_hex()}}</td>
+                                    </tr>
+                                </table>
+                            </details>
+                        </td>
+                        <td style="text-align: right" class="mono">
+                            {{input.utxo.get_native_currency_amount().display_n_decimals(5)}}
+                            NPT
+                        </td>
+                    </tr>
+                    {% } %}
+                </table>
+                <table class="striped">
+                    <tr>
+                        <th colspan="2" style="font-weight: bold;">outputs</th>
+                    </tr>
+                    {% for output in tx_info.outputs.iter() { %}
+                    <tr>
+                        <td>
+                            <details>
+                                <summary>
+                                    {{output.addition_record().canonical_commitment.to_hex()}}
+                                </summary>
+                                <table>
+                                    <tr>
+                                        <td>UTXO digest:</td>
+                                        <td class="mono">{{Tip5::hash(&output.utxo).to_hex()}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>sender randomness:</td>
+                                        <td class="mono">{{output.sender_randomness.to_hex()}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>receiver digest:</td>
+                                        <td class="mono">{{output.receiver_digest.to_hex()}}</td>
+                                    </tr>
+                                </table>
+                            </details>
+                        </td>
+                        <td style="text-align: right" class="mono">
+                            {{output.utxo.get_native_currency_amount().display_n_decimals(5)}}
+                            NPT
+                        </td>
+                    </tr>
+                    {% } %}
+                </table>
+            </details>
+            {% }, AnnouncementType::Unknown(payload) => { %}
+            <details>
+                <summary>Unknown Type</summary>
+                {% for chunk in payload.encode().chunks(4) { %}
+                <p class="mono">
+                    {% for d in chunk { %}
+                    {{ format!("{:016x}", d.value()) }}
+                    {% } %}
+                </p>
+                {% } %}
+            </details>
+            {% }, } %}
+        </article>
+
+        <article>
+            <p>
+                <a href="/">Home</a>
+                | <a href='/block/genesis'>Genesis</a>
+                | <a href='/block/tip'>Tip</a>
+                {% if self.index == 0 { %}
+                | Previous Announcement
+                {% } else { %}
+                | <a href='/announcement/digest/{{self.block_hash.to_hex()}}/{{self.index - 1}}'>Previous
+                    Announcement</a>
+                {% } %}
+
+                {% if self.index+1 >= self.num_announcements { %}
+                | Next Announcement
+                {% } else { %}
+                | <a href='/announcement/digest/{{self.block_hash.to_hex()}}/{{self.index + 1}}'>Next Announcement</a>
+                {% } %}
+            </p>
+        </article>
+
+    </main>
+</body>
+
+</html>

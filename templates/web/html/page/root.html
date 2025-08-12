@@ -1,113 +1,152 @@
 <html>
+
 <head>
     <title>{{self.state.config.site_name}}: (network: {{self.state.network}})</title>
-{{ html_escaper::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"), "/templates/web/html/components/head.html"))) }}
+    {{ html_escaper::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"),
+    "/templates/web/html/components/head.html"))) }}
 </head>
+
 <body>
-<header class="container">
-<h1>
-    <img src="/image/neptune-logo-circle-small.png" align="right"/>
-    {{self.state.config.site_name}} (network: {{self.state.network}})
-</h1>
-The blockchain tip is at height: {{self.tip_height}}
-</header>
+    <header class="container">
+        <h1>
+            <img src="/image/neptune-logo-circle-small.png" align="right" />
+            {{self.state.config.site_name}} (network: {{self.state.network}})
+        </h1>
+        The blockchain tip is at height: {{self.tip_height}}
+    </header>
 
-<main class="container">
+    <main class="container">
 
-<article>
-<details open>
-<summary>
-    Block Lookup
-</summary>
-<form action="/rqs" method="get">
-<input type="hidden" name="block" value="" />
-<input type="hidden" name="_ig" value="l"/>
-<span class="tooltip">ⓘ
-    <span class="tooltiptext">
-        Provide a numeric block height or hexadecimal digest identifier to lookup any block in the Neptune blockchain.
-    </span>
-</span>
+        <article>
+            <details open>
+                <summary>
+                    Block Lookup
+                </summary>
+                <form action="/rqs" method="get">
+                    <input type="hidden" name="block" value="" />
+                    <input type="hidden" name="_ig" value="l" />
+                    <span class="tooltip">ⓘ
+                        <span class="tooltiptext">
+                            Provide a numeric block height or hexadecimal digest identifier to lookup any block in the
+                            Neptune blockchain.
+                        </span>
+                    </span>
 
-Block height or digest:
-<input type="text" size="80" name="height_or_digest" class="mono"/>
-<input type="submit" name="l" value="Lookup Block"/>
-</form>
+                    Block height or digest:
+                    <input type="text" size="80" name="height_or_digest" class="mono" />
+                    <input type="submit" name="l" value="Lookup Block" />
+                </form>
 
-Quick Lookup:
-    <a href="/block/genesis">Genesis Block</a> |
-    <a href="/block/tip">Tip</a><br/>
-</details>
-</article>
+                Quick Lookup:
+                <a href="/block/genesis">Genesis Block</a> |
+                <a href="/block/tip">Tip</a><br />
+            </details>
+        </article>
 
-<article>
-<details open>
-<summary>UTXO Lookup</summary>
-<form action="/rqs" method="get">
-<input type="hidden" name="_ig" value="l" />
-    <span class="tooltip">ⓘ
-        <span class="tooltiptext">
-            An Unspent Transaction Output (UTXO) index can be found in the output of <i>neptune-cli wallet-status</i>.  Look for the field: <b>aocl_leaf_index</b>
-        </span>
-    </span>
-    UTXO index:
-    <input type="text" size="10" name="utxo" />
-    <input type="submit" name="l" value="Lookup Utxo" />
-</form>
-</details>
-</article>
+        <article>
+            <details open>
+                <summary>UTXO Lookup</summary>
+                <form action="/rqs" method="get">
+                    <input type="hidden" name="_ig" value="l" />
+                    <span class="tooltip">ⓘ
+                        <span class="tooltiptext">
+                            An Unspent Transaction Output (UTXO) index can be found in the output of <i>neptune-cli
+                                wallet-status</i>. Look for the field: <b>aocl_leaf_index</b>
+                        </span>
+                    </span>
+                    UTXO index:
+                    <input type="text" size="10" name="utxo" />
+                    <input type="submit" name="l" value="Lookup Utxo" />
+                </form>
+            </details>
+        </article>
 
-<article>
-<details>
-<summary>REST RPCs</summary>
-<section>
-RPC endpoints are available for automating block explorer queries:
-</section>
+        <article>
+            <details open>
+                <summary>Announcement Lookup</summary>
+                <form action="/rqs" method="get">
+                    <input type="hidden" name="announcement" value="" />
+                    <input type="hidden" name="_ig" value="l" />
+                    <span class="tooltip">ⓘ
+                        <span class="tooltiptext">
+                            A numeric block height or hexadecimal digest to identify the block in which the announcement
+                            lives.
+                        </span>
+                    </span>
+                    Block height or digest:
+                    <input type="text" size="80" name="height_or_digest" class="mono" />
 
-<details>
-<summary>/block_info</summary>
-<div class="indent">
-    <h4>Examples</h4>
+                    <span class="tooltip">ⓘ
+                        <span class="tooltiptext">
+                            The index of the announcement within the block (as a block can have many announcements).
+                        </span>
+                    </span>
+                    Announcement index:
+                    <input type="text" size="10" name="index" />
+                    <input type="submit" name="l" value="Lookup Announcement" />
+                </form>
+            </details>
+        </article>
 
-    <ul>
-    <li><a href="/rpc/block_info/genesis">/rpc/block_info/genesis</a></li>
-    <li><a href="/rpc/block_info/tip">/rpc/block_info/tip</a></li>
-    <li><a href="/rpc/block_info/height/2">/rpc/block_info/height/2</a></li>
-    <li><a href="/rpc/block_info/digest/{{self.state.genesis_digest.to_hex()}}">/rpc/block_info/digest/{{self.state.genesis_digest.to_hex()}}</a></li>
-    <li><a href="/rpc/block_info/height_or_digest/1">/rpc/block_info/height_or_digest/1</a></li>
-    </ul>
-</div>
-</details>
+        <article>
+            <details>
+                <summary>REST RPCs</summary>
+                <section>
+                    RPC endpoints are available for automating block explorer queries:
+                </section>
 
-<details>
-<summary>/block_digest</summary>
-<div class="indent">
-    <h4>Examples</h4>
+                <details>
+                    <summary>/block_info</summary>
+                    <div class="indent">
+                        <h4>Examples</h4>
 
-    <ul>
-    <li><a href="/rpc/block_digest/genesis">/rpc/block_digest/genesis</a></li>
-    <li><a href="/rpc/block_digest/tip">/rpc/block_digest/tip</a></li>
-    <li><a href="/rpc/block_digest/height/2">/rpc/block_digest/height/2</a></li>
-    <li><a href="/rpc/block_digest/digest/{{self.state.genesis_digest.to_hex()}}">/rpc/block_digest/digest/{{self.state.genesis_digest.to_hex()}}</a></li>
-    <li><a href="/rpc/block_digest/height_or_digest/{{self.state.genesis_digest.to_hex()}}">/rpc/block_digest/height_or_digest/{{self.state.genesis_digest.to_hex()}}</a></li>
-    </ul>
-</div>
-</details>
+                        <ul>
+                            <li><a href="/rpc/block_info/genesis">/rpc/block_info/genesis</a></li>
+                            <li><a href="/rpc/block_info/tip">/rpc/block_info/tip</a></li>
+                            <li><a href="/rpc/block_info/height/2">/rpc/block_info/height/2</a></li>
+                            <li><a
+                                    href="/rpc/block_info/digest/{{self.state.genesis_digest.to_hex()}}">/rpc/block_info/digest/{{self.state.genesis_digest.to_hex()}}</a>
+                            </li>
+                            <li><a href="/rpc/block_info/height_or_digest/1">/rpc/block_info/height_or_digest/1</a></li>
+                        </ul>
+                    </div>
+                </details>
 
-<details>
-<summary>/utxo_digest</summary>
-<div class="indent">
-    <h4>Examples</h4>
+                <details>
+                    <summary>/block_digest</summary>
+                    <div class="indent">
+                        <h4>Examples</h4>
 
-    <ul>
-    <li><a href="/rpc/utxo_digest/2">/rpc/utxo_digest/2</a><br/></li>
-    </ul>
-</div>
-</details>
+                        <ul>
+                            <li><a href="/rpc/block_digest/genesis">/rpc/block_digest/genesis</a></li>
+                            <li><a href="/rpc/block_digest/tip">/rpc/block_digest/tip</a></li>
+                            <li><a href="/rpc/block_digest/height/2">/rpc/block_digest/height/2</a></li>
+                            <li><a
+                                    href="/rpc/block_digest/digest/{{self.state.genesis_digest.to_hex()}}">/rpc/block_digest/digest/{{self.state.genesis_digest.to_hex()}}</a>
+                            </li>
+                            <li><a
+                                    href="/rpc/block_digest/height_or_digest/{{self.state.genesis_digest.to_hex()}}">/rpc/block_digest/height_or_digest/{{self.state.genesis_digest.to_hex()}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </details>
 
-</details>
-</article>
+                <details>
+                    <summary>/utxo_digest</summary>
+                    <div class="indent">
+                        <h4>Examples</h4>
 
-</main>
+                        <ul>
+                            <li><a href="/rpc/utxo_digest/2">/rpc/utxo_digest/2</a><br /></li>
+                        </ul>
+                    </div>
+                </details>
+
+            </details>
+        </article>
+
+    </main>
 
 </body>
+
 </html>
