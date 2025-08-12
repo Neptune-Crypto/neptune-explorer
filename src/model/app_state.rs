@@ -9,6 +9,7 @@ use neptune_cash::prelude::twenty_first::tip5::Digest;
 use neptune_cash::rpc_auth;
 use std::sync::Arc;
 
+#[derive(Debug, Clone)]
 pub struct AppStateInner {
     pub network: Network,
     pub config: Config,

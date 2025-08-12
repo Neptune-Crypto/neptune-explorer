@@ -3,140 +3,164 @@
 
 <head>
     <title>{{self.header.state.config.site_name}}: Block Height {{self.block_info.height}}</title>
-{{html_escaper::Trusted(include_str!(concat!(env!("CARGO_MANIFEST_DIR"),"/templates/web/html/components/head.html")))}}
+    {{html_escaper::Trusted(include_str!(concat!(env!("CARGO_MANIFEST_DIR"),"/templates/web/html/components/head.html")))}}
 </head>
 
 <body>
-{{Trusted(self.header.to_string())}}
+    {{Trusted(self.header.to_string())}}
 
-<main class="container">
+    <main class="container">
 
-<article>
-    <h2>Block height: {{self.block_info.height}}</h2>
+        <article>
+            <h2>Block height: {{self.block_info.height}}</h2>
 
-<!-- special_block_notice -->
-%%  if self.block_info.is_genesis {
-        <p>This is the genesis block</p>
-%%  }
-%%  if self.block_info.is_tip {
-        <p>This is the latest block (tip)</p>
-%%  }
+            <!-- special_block_notice -->
+            %% if self.block_info.is_genesis {
+            <p>This is the genesis block</p>
+            %% }
+            %% if self.block_info.is_tip {
+            <p>This is the latest block (tip)</p>
+            %% }
 
-    <table class="striped">
-        <tr>
-            <td>Digest</td>
-            <td class="mono">{{self.block_info.digest.to_hex()}}</td>
-        </tr>
-        <tr>
-            <td>Created</td>
-            <td>{{self.block_info.timestamp.standard_format()}}</td>
-        </tr>
-        <tr>
-            <td>Size
-                <span class="tooltip">ⓘ
-                    <span class="tooltiptext">Unit: number of BFieldElements. One BFieldElement consists of 8 bytes.</span>
-                </span>
-            </td>
-            <td>{{self.block_info.size}}</td>
-        </tr>
-        <tr>
-            <td>Inputs</td>
-            <td>{{self.block_info.num_inputs}}<br /></td>
-        </tr>
-        <tr>
-            <td>Outputs</td>
-            <td>{{self.block_info.num_outputs}}</td>
-        </tr>
-        <tr>
-            <td>Difficulty</td>
-            <td>{{self.block_info.difficulty}}</td>
-        </tr>
-        <tr>
-            <td>Cumulative Proof-Of-Work
-                <span class="tooltip">ⓘ
-                    <span class="tooltiptext">estimated total # of hashes performed by miners from genesis block to this block.</span>
-                </span>
-            </td>
-            <td>{{self.block_info.cumulative_proof_of_work}}</td>
-        </tr>
-        <tr>
-            <td>Coinbase
-                <span class="tooltip">ⓘ
-                    <span class="tooltiptext">Total block reward amount paid to the miner(s) that found this block.</span>
-                </span>
-            </td>
-            <td>{{self.block_info.coinbase_amount}}</td>
-        </tr>
-%% if self.block_info.coinbase_amount != self.block_info.expected_coinbase_amount() {
-        <tr>
-            <td>Expected Coinbase
-                <span class="tooltip">ⓘ
-                    <span class="tooltiptext">Expected (maximum) block reward amount paid to the miner(s) that find a block at this block-height.</span>
-                </span>
-            </td>
-            <td>{{self.block_info.expected_coinbase_amount()}}</td>
-        </tr>
-%% }
-        <tr>
-            <td>Fee</td>
-            <td>{{self.block_info.fee}}</td>
-        </tr>
-        <tr>
-            <td>Canonical
-                <span class="tooltip">ⓘ
-                    <span class="tooltiptext">
-                        The canonical blockchain is the chain with the most accumulated proof-of-work and is considered the
-                        official record of transaction history.
-                    </span>
-                </span>
-            </td>
-            <td>
-                %% if self.block_info.is_canonical {
-                Yes.  This block is in the canonical blockchain.
-                %% } else {
-                No.  This block is not in the canonical blockchain.
+            <table class="striped">
+                <tr>
+                    <td>Digest</td>
+                    <td class="mono">{{self.block_info.digest.to_hex()}}</td>
+                </tr>
+                <tr>
+                    <td>Created</td>
+                    <td>{{self.block_info.timestamp.standard_format()}}</td>
+                </tr>
+                <tr>
+                    <td>Size
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">Unit: number of BFieldElements. One BFieldElement consists of 8
+                                bytes.</span>
+                        </span>
+                    </td>
+                    <td>{{self.block_info.size}}</td>
+                </tr>
+                <tr>
+                    <td>Inputs</td>
+                    <td>{{self.block_info.num_inputs}}<br /></td>
+                </tr>
+                <tr>
+                    <td>Outputs</td>
+                    <td>{{self.block_info.num_outputs}}</td>
+                </tr>
+                <tr>
+                    <td>Announcements
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">
+                                Data broadcast as part of the transaction.
+                            </span>
+                        </span>
+                    </td>
+                    <td>
+                        {% if self.block_info.num_announcements > 0 { %}
+                        <a
+                            href='/announcement/digest/{{self.block_info.digest.to_hex()}}/0'>{{self.block_info.num_announcements}}</a>
+                        {% } else { %}
+                        0
+                        {% } %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Difficulty</td>
+                    <td>{{self.block_info.difficulty}}</td>
+                </tr>
+                <tr>
+                    <td>Cumulative Proof-Of-Work
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">estimated total # of hashes performed by miners from genesis block
+                                to this block.</span>
+                        </span>
+                    </td>
+                    <td>{{self.block_info.cumulative_proof_of_work}}</td>
+                </tr>
+                <tr>
+                    <td>Coinbase
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">Total block reward amount paid to the miner(s) that found this
+                                block.</span>
+                        </span>
+                    </td>
+                    <td>{{self.block_info.coinbase_amount}}</td>
+                </tr>
+                %% if self.block_info.coinbase_amount != self.block_info.expected_coinbase_amount() {
+                <tr>
+                    <td>Expected Coinbase
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">Expected (maximum) block reward amount paid to the miner(s) that
+                                find a block at this block-height.</span>
+                        </span>
+                    </td>
+                    <td>{{self.block_info.expected_coinbase_amount()}}</td>
+                </tr>
                 %% }
-            </td>
-        </tr>
-        <tr>
-            <td>Sibling Blocks
-                <span class="tooltip">ⓘ
-                    <span class="tooltiptext">
-                        Blocks that exist at the same height as this block. Only one sibling can be in the canonical blockchain.
-                    </span>
-                </span>
-            </td>
-            <td class="mono">
-%% for sibling_digest in self.block_info.sibling_blocks.iter().map(|d| d.to_hex()) {
-<a href='/block/digest/{{sibling_digest}}'>{{sibling_digest}}</a><br/>
-%% }
-            </td>
-        </tr>
+                <tr>
+                    <td>Fee</td>
+                    <td>{{self.block_info.fee}}</td>
+                </tr>
+                <tr>
+                    <td>Canonical
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">
+                                The canonical blockchain is the chain with the most accumulated proof-of-work and is
+                                considered the
+                                official record of transaction history.
+                            </span>
+                        </span>
+                    </td>
+                    <td>
+                        %% if self.block_info.is_canonical {
+                        Yes. This block is in the canonical blockchain.
+                        %% } else {
+                        No. This block is not in the canonical blockchain.
+                        %% }
+                    </td>
+                </tr>
+                <tr>
+                    <td>Sibling Blocks
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">
+                                Blocks that exist at the same height as this block. Only one sibling can be in the
+                                canonical blockchain.
+                            </span>
+                        </span>
+                    </td>
+                    <td class="mono">
+                        %% for sibling_digest in self.block_info.sibling_blocks.iter().map(|d| d.to_hex()) {
+                        <a href='/block/digest/{{sibling_digest}}'>{{sibling_digest}}</a><br />
+                        %% }
+                    </td>
+                </tr>
 
-    </table>
+            </table>
 
-</article>
+        </article>
 
-<article>
+        <article>
 
-    <p>
-        <a href="/">Home</a>
-        | <a href='/block/genesis'>Genesis</a>
-        | <a href='/block/tip'>Tip</a>
-%% if self.block_info.is_genesis {
-        | Previous Block
-%% } else {
-        | <a href='/block/height/{{self.block_info.height.previous().unwrap()}}'>Previous Block</a>
-%% }
+            <p>
+                <a href="/">Home</a>
+                | <a href='/block/genesis'>Genesis</a>
+                | <a href='/block/tip'>Tip</a>
+                %% if self.block_info.is_genesis {
+                | Previous Block
+                %% } else {
+                | <a href='/block/height/{{self.block_info.height.previous().unwrap()}}'>Previous Block</a>
+                %% }
 
-%% if self.block_info.is_tip {
-        | Next Block
-%% } else {
-        | <a href='/block/height/{{self.block_info.height.next()}}'>Next Block</a>
-%% }
-    </p>
+                %% if self.block_info.is_tip {
+                | Next Block
+                %% } else {
+                | <a href='/block/height/{{self.block_info.height.next()}}'>Next Block</a>
+                %% }
+            </p>
 
-</article>
-</main>
+        </article>
+    </main>
 </body>
+
 </html>
