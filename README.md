@@ -34,14 +34,15 @@ not tested or supported.   Please let us know if you get it work.  patches accep
 2. start neptune-explorer
 
 ```
-nohup neptune-explorer 2>&1 > /path/to/logs/neptune-explorer.log &
+nohup neptune-explorer --site-domain testdomain 2>&1 > /path/to/logs/neptune-explorer.log &
 ```
 
 Notes:
 * The block-explorer automatically uses the same network (mainnet, testnet, etc) as the neptune-core instance it is connected to, and the network is displayed in the web interface.
 * If neptune-core RPC server is running on a non-standard port, you can provide it with the `--neptune-rpc-port` flag.
 * neptune-explorer listens for http requests on port 3000 by default.  This can be changed with the `--listen-port` flag.
-* Site name must be specified with the `--site-name` flag.
+* Site name can be specified with the --site-name flag.
+* Site domain *must* be specified with the `--site-domain` flag.
 
 
 ## Connecting via Browser
@@ -52,7 +53,7 @@ Just navigate to http://localhost:3000/
 
 When connected to an out-of-date or unsynced neptune-core node, it might be a good idea to turn on mocking so that whenever a resource is unavailable, a random one is generated and returned. To do this, compile with the feature flag "mock" and make sure that the "MOCK" environment variable is set.
 
-In one command: `MOCK=1 cargo run --features "mock" -- --site-name testname`
+In one command: `MOCK=1 cargo run --features "mock" -- --site-domain testdomain`
 
 ## SSL/TLS, Nginx, etc.
 
