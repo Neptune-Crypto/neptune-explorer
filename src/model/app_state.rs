@@ -1,4 +1,5 @@
 use crate::model::config::Config;
+use crate::model::transparent_utxo_tuple::TransparentUtxoTuple;
 use crate::neptune_rpc;
 use anyhow::Context;
 use arc_swap::ArcSwap;
@@ -8,6 +9,7 @@ use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
 use neptune_cash::prelude::twenty_first::tip5::Digest;
 use neptune_cash::rpc_auth;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 #[derive(Debug, Clone)]
 pub struct AppStateInner {
@@ -15,6 +17,12 @@ pub struct AppStateInner {
     pub config: Config,
     pub rpc_client: neptune_rpc::AuthenticatedClient,
     pub genesis_digest: Digest,
+
+    /// Whenever an announcement of type transparent transaction info is fetched
+    /// from the RPC endpoint, we learn information about UTXOs. Since we expect
+    /// transparent transactions to be rare, it is okay to cache this in RAM
+    /// instead of storing it on disk.
+    pub transparent_utxos_cache: Arc<Mutex<Vec<TransparentUtxoTuple>>>,
 }
 
 impl AppStateInner {
@@ -26,29 +34,17 @@ impl AppStateInner {
 #[derive(Clone)]
 pub struct AppState(Arc<ArcSwap<AppStateInner>>);
 
+impl AppState {
+    fn new(app_state_inner: AppStateInner) -> Self {
+        Self(Arc::new(ArcSwap::from_pointee(app_state_inner)))
+    }
+}
+
 impl std::ops::Deref for AppState {
     type Target = Arc<ArcSwap<AppStateInner>>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
-    }
-}
-
-impl From<(Network, Config, neptune_rpc::AuthenticatedClient, Digest)> for AppState {
-    fn from(
-        (network, config, rpc_client, genesis_digest): (
-            Network,
-            Config,
-            neptune_rpc::AuthenticatedClient,
-            Digest,
-        ),
-    ) -> Self {
-        Self(Arc::new(ArcSwap::from_pointee(AppStateInner {
-            network,
-            config,
-            rpc_client,
-            genesis_digest,
-        })))
     }
 }
 
@@ -68,12 +64,13 @@ impl AppState {
             .with_context(|| "Failed calling neptune-core api method: block_digest")?
             .with_context(|| "neptune-core failed to provide a genesis block")?;
 
-        Ok(Self::from((
-            rpc_client.network,
-            Config::parse(),
+        Ok(AppState::new(AppStateInner {
+            network: rpc_client.network,
+            config: Config::parse(),
             rpc_client,
             genesis_digest,
-        )))
+            transparent_utxos_cache: Arc::new(Mutex::new(vec![])),
+        }))
     }
 
     /// Sets the rpc_client
@@ -95,6 +92,7 @@ impl AppState {
             rpc_client,
             config: inner.config.clone(),
             genesis_digest: inner.genesis_digest,
+            transparent_utxos_cache: Arc::new(Mutex::new(vec![])),
         };
         self.0.store(Arc::new(new_inner));
     }

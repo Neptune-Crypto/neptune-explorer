@@ -87,7 +87,13 @@
                         <td>
                             <details>
                                 <summary>
+                                    {% if let Some(Some(aocl_leaf_index)) =
+                                    self.addition_record_indices.get(&output.addition_record()) { %}
+                                    <a
+                                        href='/utxo/{{aocl_leaf_index}}'>{{output.addition_record().canonical_commitment.to_hex()}}</a>
+                                    {% } else { %}
                                     {{output.addition_record().canonical_commitment.to_hex()}}
+                                    {% } %}
                                 </summary>
                                 <table>
                                     <tr>

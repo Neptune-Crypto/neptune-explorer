@@ -1,6 +1,7 @@
 use crate::alert_email;
 use crate::model::app_state::AppState;
 use crate::model::config::Config;
+use crate::model::transparent_utxo_tuple::TransparentUtxoTuple;
 use anyhow::Context;
 use chrono::DateTime;
 use chrono::TimeDelta;
@@ -17,11 +18,15 @@ use neptune_cash::rpc_auth;
 use neptune_cash::rpc_server::error::RpcError;
 use neptune_cash::rpc_server::RPCClient;
 use neptune_cash::rpc_server::RpcResult;
+use neptune_cash::util_types::mutator_set::addition_record::AdditionRecord;
+use std::collections::HashMap;
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use tarpc::client;
 use tarpc::context;
 use tarpc::tokio_serde::formats::Json as RpcJson;
+use tokio::sync::Mutex;
 use tracing::{debug, info, warn};
 
 #[cfg(feature = "mock")]
@@ -92,8 +97,32 @@ impl AuthenticatedClient {
         ctx: ::tarpc::context::Context,
         token: rpc_auth::Token,
         leaf_index: u64,
+        _transparent_utxos_cache: Arc<Mutex<Vec<TransparentUtxoTuple>>>,
     ) -> ::core::result::Result<RpcResult<Option<Digest>>, ::tarpc::client::RpcError> {
-        self.client.utxo_digest(ctx, token, leaf_index).await
+        let rpc_result = self.client.utxo_digest(ctx, token, leaf_index).await;
+
+        if let Ok(Ok(Some(_))) = rpc_result {
+            return rpc_result;
+        }
+
+        // if MOCK environment variable is set and feature is enabled,
+        // imagine some mock UTXO info
+        #[cfg(feature = "mock")]
+        if std::env::var(MOCK_KEY).is_ok() {
+            let cache = _transparent_utxos_cache.lock().await;
+            tracing::warn!(
+                "RPC query failed and MOCK flag set, so seeing if we can return a cached utxo; cache has {} objects", cache.len()
+            );
+            if let Some(entry) = cache
+                .iter()
+                .find(|tu| tu.aocl_leaf_index().is_some_and(|li| li == leaf_index))
+            {
+                tracing::warn!("returning a cached utxo");
+                return Ok(Ok(Some(entry.addition_record().canonical_commitment)));
+            }
+        }
+
+        rpc_result
     }
 
     /// Intercept and relay call to [`RPCClient::announcements_in_block`]
@@ -123,7 +152,9 @@ impl AuthenticatedClient {
             use rand::rngs::StdRng;
             use rand::Rng;
             use rand::SeedableRng;
-            tracing::warn!("RPC query failed and MOCK flag set, so returning an imagined block");
+            tracing::warn!(
+                "RPC query failed and MOCK flag set, so returning an imagined announcement"
+            );
             let mut hasher = Hasher::new();
             hasher.update(&block_selector.to_string().bytes().collect::<Vec<_>>());
             let mut rng = StdRng::from_seed(*hasher.finalize().as_bytes());
@@ -151,6 +182,67 @@ impl AuthenticatedClient {
             }
 
             return Ok(Ok(Some(announcements)));
+        }
+
+        // otherwise, return the original error
+        rpc_result
+    }
+
+    /// Intercept and relay call to
+    /// [`RPCClient::addition_record_indices_for_block`].
+    ///
+    /// Also take an extra argument for mocking purposes.
+    pub async fn addition_record_indices_for_block(
+        &self,
+        ctx: ::tarpc::context::Context,
+        token: rpc_auth::Token,
+        block_selector: BlockSelector,
+        _addition_records: &[AdditionRecord],
+    ) -> ::core::result::Result<
+        RpcResult<Option<HashMap<AdditionRecord, Option<u64>>>>,
+        ::tarpc::client::RpcError,
+    > {
+        let rpc_result = self
+            .client
+            .addition_record_indices_for_block(ctx, token, block_selector)
+            .await;
+
+        // if the RPC call was successful, return that
+        if let Ok(Ok(Some(_))) = rpc_result {
+            return rpc_result;
+        }
+
+        // if MOCK environment variable is set and feature is enabled,
+        // imagine some mock hash map
+        #[cfg(feature = "mock")]
+        if std::env::var(MOCK_KEY).is_ok() {
+            use blake3::Hasher;
+            use rand::rngs::StdRng;
+            use rand::Rng;
+            use rand::SeedableRng;
+            tracing::warn!(
+                "RPC query failed and MOCK flag set, so returning an imagined addition records"
+            );
+            let mut hasher = Hasher::new();
+            hasher.update(&block_selector.to_string().bytes().collect::<Vec<_>>());
+            let mut rng = StdRng::from_seed(*hasher.finalize().as_bytes());
+
+            let aocl_offset = rng.random::<u64>() >> 1;
+            let addition_record_indices = _addition_records
+                .iter()
+                .enumerate()
+                .map(|(i, ar)| {
+                    (
+                        *ar,
+                        if rng.random_bool(0.5_f64) {
+                            Some(i as u64 + aocl_offset)
+                        } else {
+                            None
+                        },
+                    )
+                })
+                .collect::<HashMap<_, _>>();
+            return Ok(Ok(Some(addition_record_indices)));
         }
 
         // otherwise, return the original error
