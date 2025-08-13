@@ -40,6 +40,7 @@
             {% match &self.announcement_type { AnnouncementType::TransparentTxInfo(tx_info) => { %}
             <details open>
                 <summary>Transparent Transaction Info</summary>
+                {% if !tx_info.inputs.is_empty() { %}
                 <table class="striped">
                     <tr>
                         <th colspan=2 style="font-weight: bold;">inputs</th>
@@ -75,6 +76,8 @@
                     </tr>
                     {% } %}
                 </table>
+                {% } %}
+                {% if !tx_info.outputs.is_empty() { %}
                 <table class="striped">
                     <tr>
                         <th colspan="2" style="font-weight: bold;">outputs</th>
@@ -109,6 +112,7 @@
                     </tr>
                     {% } %}
                 </table>
+                {% } %}
             </details>
             {% }, AnnouncementType::Unknown(payload) => { %}
             <details>
