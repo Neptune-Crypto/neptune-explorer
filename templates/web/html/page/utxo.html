@@ -2,43 +2,92 @@
 
 <head>
     <title>{{self.header.state.config.site_name}}: Utxo {{self.index}}</title>
-{{html_escaper::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"), "/templates/web/html/components/head.html")))}}
+    {{html_escaper::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"),
+    "/templates/web/html/components/head.html")))}}
 </head>
 
 <body>
-{{Trusted(self.header.to_string())}}
+    {{Trusted(self.header.to_string())}}
 
-<main class="container">
+    <main class="container">
 
-<article>
-<summary>
-    <span class="tooltip">ⓘ
-        <span class="tooltiptext">
-            UTXO = Unspent Transaction Output.  It represents an output of transaction A which can also be an input to transaction B.
-        </span>
-    </span>
-    UTXO Information
-</summary>
-    <table class="striped">
-        <tr>
-            <td>Index</td>
-            <td>{{self.index}}</td>
-        </tr>
-        <tr>
-            <td>Digest</td>
-            <td>{{self.digest.to_hex()}}</td>
-        </tr>
-    </table>
-</article>
+        <article>
+            <summary>
+                <span class="tooltip">ⓘ
+                    <span class="tooltiptext">
+                        UTXO = Unspent Transaction Output. It represents an output of transaction A which can also be an
+                        input to transaction B.
+                    </span>
+                </span>
+                UTXO Information
+            </summary>
+            <table class="striped">
+                <tr>
+                    <td>AOCL Leaf Index</td>
+                    <td>{{self.index}}</td>
+                </tr>
+                <tr>
+                    <td>Addition Record</td>
+                    <td>{{self.digest.to_hex()}}</td>
+                </tr>
+            </table>
+        </article>
 
-<article>
-    <p>
-        <a href="/">Home</a>
-        | <a href='/block/genesis'>Genesis</a>
-        | <a href='/block/tip'>Tip</a>
-    </p>
-</article>
+        {% if let Some(utxo_info) = &self.transparent_utxo_info { %}
+        <article>
+            <summary>
+                <span class="tooltip">ⓘ
+                    <span class="tooltiptext">
+                        UTXOs consumed or produced by a transparent transaction disclose the information they otherwise
+                        hide.
+                    </span>
+                </span>
+                Transparent UTXO Information
+            </summary>
+            <table class="striped">
+                <tr>
+                    <td>UTXO Digest:</td>
+                    <td><span class="mono">{{Tip5::hash(&utxo_info.utxo()).to_hex()}}</span></td>
+                </tr>
+                <tr>
+                    <td>Sender Randomness:</td>
+                    <td><span class="mono">{{utxo_info.sender_randomness().to_hex()}}</span></td>
+                </tr>
+                <tr>
+                    <td>Receiver Digest</td>
+                    <td><span class="mono">{{utxo_info.receiver_digest().to_hex()}}</span></td>
+                </tr>
+                {% if let Some(receiver_preimage) = utxo_info.receiver_preimage() { %}
+                <tr>
+                    <td>Receiver Preimage</td>
+                    <td><span class="mono">{{receiver_preimage.to_hex()}}</span></td>
+                </tr>
+                {% } %}
+                {% if utxo_info.utxo().has_native_currency() { %}
+                <tr>
+                    <td>Amount:</td>
+                    <td>{{utxo_info.utxo().get_native_currency_amount().display_n_decimals(5)}} NPT</td>
+                </tr>
+                {% } %}
+                {% if let Some(release_date) = utxo_info.utxo().release_date() { %}
+                <tr>
+                    <td>Time-Locked Until</td>
+                    <td><span class="mono">{{release_date.standard_format()}}</span></td>
+                </tr>
+                {% } %}
+            </table>
+        </article>
+        {% } %}
 
-</main>
+        <article>
+            <p>
+                <a href="/">Home</a>
+                | <a href='/block/genesis'>Genesis</a>
+                | <a href='/block/tip'>Tip</a>
+            </p>
+        </article>
+
+    </main>
 </body>
+
 </html>
