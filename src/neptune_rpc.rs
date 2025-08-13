@@ -105,21 +105,17 @@ impl AuthenticatedClient {
             return rpc_result;
         }
 
-        // if MOCK environment variable is set and feature is enabled,
-        // imagine some mock UTXO info
+        // If mocking is enabled, it is possible that the cache contains a UTXO
+        // for this index that was imagined in the past.
         #[cfg(feature = "mock")]
-        if std::env::var(MOCK_KEY).is_ok() {
-            let cache = _transparent_utxos_cache.lock().await;
-            tracing::warn!(
-                "RPC query failed and MOCK flag set, so seeing if we can return a cached utxo; cache has {} objects", cache.len()
-            );
-            if let Some(entry) = cache
-                .iter()
-                .find(|tu| tu.aocl_leaf_index().is_some_and(|li| li == leaf_index))
-            {
-                tracing::warn!("returning a cached utxo");
-                return Ok(Ok(Some(entry.addition_record().canonical_commitment)));
-            }
+        if let Some(entry) = _transparent_utxos_cache
+            .lock()
+            .await
+            .iter()
+            .find(|tu| tu.aocl_leaf_index().is_some_and(|li| li == leaf_index))
+        {
+            tracing::warn!("returning a cached utxo");
+            return Ok(Ok(Some(entry.addition_record().canonical_commitment)));
         }
 
         rpc_result
