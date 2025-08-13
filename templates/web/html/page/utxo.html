@@ -75,6 +75,26 @@
                     <td><span class="mono">{{release_date.standard_format()}}</span></td>
                 </tr>
                 {% } %}
+                {% if let Some(confirmed_in) = utxo_info.confirmed_in_block() { %}
+                <tr>
+                    <td>Confirmed in Block:</td>
+                    <td><a href='/block/digest/{{confirmed_in.to_hex()}}'>{{confirmed_in.to_hex()}}</a></td>
+                </tr>
+                {% } %}
+                {% if !utxo_info.spent_in_block().is_empty() { %}
+                <tr>
+                    {% if utxo_info.spent_in_block().len() == 1 { %}
+                    <td>Spent in Block:</td>
+                    {% } else { %}
+                    <td>Spent in Blocks:</td>
+                    {% } %}
+                    <td>
+                        {% for b in utxo_info.spent_in_block() { %}
+                        <a href='/block/digest/{{b.to_hex()}}'>{{b.to_hex()}}</a>
+                        {% } %}
+                    </td>
+                </tr>
+                {% } %}
             </table>
         </article>
         {% } %}
