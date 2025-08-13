@@ -1737,6 +1737,7 @@ dependencies = [
 [[package]]
 name = "neptune-cash"
 version = "0.3.0"
+source = "git+https://github.com/Neptune-Crypto/neptune-core.git?branch=asz%2Ftransparent-transactions#cece8dab9db0334b07a2112a9163e3882ab71a55"
 dependencies = [
  "aead",
  "aes-gcm",
