@@ -92,7 +92,7 @@ impl AppState {
             rpc_client,
             config: inner.config.clone(),
             genesis_digest: inner.genesis_digest,
-            transparent_utxos_cache: Arc::new(Mutex::new(vec![])),
+            transparent_utxos_cache: inner.transparent_utxos_cache.clone(),
         };
         self.0.store(Arc::new(new_inner));
     }
