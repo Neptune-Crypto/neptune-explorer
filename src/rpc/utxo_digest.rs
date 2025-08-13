@@ -18,9 +18,10 @@ pub async fn utxo_digest(
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<Digest>, impl IntoResponse> {
     let s = state.load();
+    let cache = s.transparent_utxos_cache.clone();
     match s
         .rpc_client
-        .utxo_digest(context::current(), s.token(), index)
+        .utxo_digest(context::current(), s.token(), index, cache)
         .await
         .map_err(rpc_err)?
         .map_err(rpc_method_err)?
