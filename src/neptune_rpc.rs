@@ -19,7 +19,6 @@ use neptune_cash::rpc_server::error::RpcError;
 use neptune_cash::rpc_server::RPCClient;
 use neptune_cash::rpc_server::RpcResult;
 use neptune_cash::util_types::mutator_set::addition_record::AdditionRecord;
-use std::collections::HashMap;
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -195,7 +194,7 @@ impl AuthenticatedClient {
         block_selector: BlockSelector,
         _addition_records: &[AdditionRecord],
     ) -> ::core::result::Result<
-        RpcResult<Option<HashMap<AdditionRecord, Option<u64>>>>,
+        RpcResult<Vec<(AdditionRecord, Option<u64>)>>,
         ::tarpc::client::RpcError,
     > {
         let rpc_result = self
@@ -204,7 +203,7 @@ impl AuthenticatedClient {
             .await;
 
         // if the RPC call was successful, return that
-        if let Ok(Ok(Some(_))) = rpc_result {
+        if let Ok(Ok(_)) = rpc_result {
             return rpc_result;
         }
 

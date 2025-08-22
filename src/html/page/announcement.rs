@@ -84,12 +84,19 @@ pub async fn announcement_page(
             .iter()
             .map(|output| output.addition_record())
             .collect::<Vec<_>>();
-        addition_record_indices = state.rpc_client.addition_record_indices_for_block(context::current(), state.token(), block_selector, &addition_records).await
-                .map_err(|e| not_found_html_response(state, Some(e.to_string())))?
-                .map_err(rpc_method_err)?
-                .expect(
-                    "block guaranteed to exist because we got here; getting its announcements should work",
-                );
+        addition_record_indices = state
+            .rpc_client
+            .addition_record_indices_for_block(
+                context::current(),
+                state.token(),
+                block_selector,
+                &addition_records,
+            )
+            .await
+            .map_err(|e| not_found_html_response(state, Some(e.to_string())))?
+            .map_err(rpc_method_err)?
+            .into_iter()
+            .collect::<HashMap<_, _>>();
 
         let mut transparent_utxos_cache = state.transparent_utxos_cache.lock().await;
 

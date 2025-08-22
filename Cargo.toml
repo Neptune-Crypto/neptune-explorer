@@ -48,7 +48,7 @@ arbitrary = "1.4.1"
 proptest-arbitrary-interop = "0.1.0"
 
 [patch.crates-io]
-neptune-cash = { git = "https://github.com/Neptune-Crypto/neptune-core.git", branch = "asz/transparent-transactions" }
+neptune-cash = { git = "https://github.com/Neptune-Crypto/neptune-core.git", branch = "master" }
 
 [features]
 mock = ["dep:blake3", "dep:rand"]
