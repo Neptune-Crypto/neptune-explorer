@@ -1,10 +1,6 @@
-use crate::html::component::header::HeaderHtml;
-use crate::html::page::not_found::not_found_html_response;
-use crate::http_util::rpc_method_err;
-use crate::model::announcement_selector::AnnouncementSelector;
-use crate::model::announcement_type::AnnouncementType;
-use crate::model::app_state::AppState;
-use crate::model::transparent_utxo_tuple::TransparentUtxoTuple;
+use std::collections::HashMap;
+use std::sync::Arc;
+
 use axum::extract::rejection::PathRejection;
 use axum::extract::Path;
 use axum::extract::State;
@@ -17,9 +13,15 @@ use neptune_cash::prelude::tasm_lib::prelude::Digest;
 use neptune_cash::prelude::triton_vm::prelude::BFieldCodec;
 use neptune_cash::prelude::twenty_first::tip5::Tip5;
 use neptune_cash::util_types::mutator_set::addition_record::AdditionRecord;
-use std::collections::HashMap;
-use std::sync::Arc;
 use tarpc::context;
+
+use crate::html::component::header::HeaderHtml;
+use crate::html::page::not_found::not_found_html_response;
+use crate::http_util::rpc_method_err;
+use crate::model::announcement_selector::AnnouncementSelector;
+use crate::model::announcement_type::AnnouncementType;
+use crate::model::app_state::AppState;
+use crate::model::transparent_utxo_tuple::TransparentUtxoTuple;
 
 #[axum::debug_handler]
 pub async fn announcement_page(

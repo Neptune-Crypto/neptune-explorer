@@ -2,7 +2,7 @@ use axum::http::StatusCode;
 use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::response::Response;
-use neptune_cash::rpc_server::error::RpcError;
+use neptune_cash::application::rpc::server::error::RpcError;
 use tarpc::client::RpcError as TarpcError;
 
 // note: http StatusCodes are defined at:

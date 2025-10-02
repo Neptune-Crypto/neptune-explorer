@@ -13,7 +13,7 @@ tokio = { version = "1.37.0", features = ["full", "tracing"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 
-neptune-cash = "0.3.0"
+neptune-cash = "0.4.0"
 tarpc = { version = "^0.34", features = [
     "tokio1",
     "serde-transport",
@@ -27,7 +27,7 @@ html-escaper = "0.2.0"
 tower-http = { version = "0.5.2", features = ["fs"] }
 readonly = "0.2.12"
 url = "2.5.0"
-lettre = {version = "0.11.7", features = ["tokio1-native-tls"]}
+lettre = { version = "0.11.7", features = ["tokio1-native-tls"] }
 chrono = "0.4.34"
 
 # only should be used inside main.rs, for the binary.
@@ -38,8 +38,8 @@ derive_more = { version = "1.0.0", features = ["display"] }
 # not a direct dep.  workaround for weird "could not resolve" cargo error
 indexmap = "2.7.0"
 
-blake3 = {version = "1.8.2", optional = true}
-rand = {version = "0.9.2", optional = true}
+blake3 = { version = "1.8.2", optional = true }
+rand = { version = "0.9.2", optional = true }
 
 #[dev-dependencies]
 test-strategy = "0.4.3"

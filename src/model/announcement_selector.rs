@@ -1,11 +1,12 @@
+use std::fmt::Display;
+use std::str::FromStr;
+
 use neptune_cash::api::export::BlockHeight;
-use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
 use neptune_cash::prelude::tasm_lib::prelude::Digest;
+use neptune_cash::protocol::consensus::block::block_selector::BlockSelector;
 use serde::de::Error;
 use serde::Deserialize;
 use serde::Deserializer;
-use std::fmt::Display;
-use std::str::FromStr;
 
 /// newtype for `BlockSelector` that provides ability to parse `height_or_digest/value`.
 ///
@@ -147,14 +148,17 @@ impl<'de> Deserialize<'de> for AnnouncementSelector {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    use arbitrary::{Arbitrary, Unstructured};
-    use proptest::string::string_regex;
-    use proptest::{prop_assert, prop_assert_eq};
-    use proptest_arbitrary_interop::arb;
     use std::str::FromStr;
+
+    use arbitrary::Arbitrary;
+    use arbitrary::Unstructured;
+    use proptest::prop_assert;
+    use proptest::prop_assert_eq;
+    use proptest::string::string_regex;
+    use proptest_arbitrary_interop::arb;
     use test_strategy::proptest;
+
+    use super::*;
 
     impl<'a> Arbitrary<'a> for AnnouncementSelector {
         fn arbitrary(u: &mut Unstructured<'a>) -> arbitrary::Result<Self> {

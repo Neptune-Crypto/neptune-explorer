@@ -1,10 +1,11 @@
-use crate::http_util::not_found_html_err;
-use crate::http_util::not_found_html_handler;
-use crate::model::app_state::AppStateInner;
 use axum::http::StatusCode;
 use axum::response::Html;
 use axum::response::Response;
 use html_escaper::Escape;
+
+use crate::http_util::not_found_html_err;
+use crate::http_util::not_found_html_handler;
+use crate::model::app_state::AppStateInner;
 
 pub fn not_found_page(error_msg: Option<String>) -> Html<String> {
     #[derive(boilerplate::Boilerplate)]

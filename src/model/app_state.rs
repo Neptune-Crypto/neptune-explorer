@@ -1,15 +1,17 @@
-use crate::model::config::Config;
-use crate::model::transparent_utxo_tuple::TransparentUtxoTuple;
-use crate::neptune_rpc;
+use std::sync::Arc;
+
 use anyhow::Context;
 use arc_swap::ArcSwap;
 use clap::Parser;
-use neptune_cash::config_models::network::Network;
-use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
+use neptune_cash::api::export::Network;
+use neptune_cash::application::rpc::auth;
 use neptune_cash::prelude::twenty_first::tip5::Digest;
-use neptune_cash::rpc_auth;
-use std::sync::Arc;
+use neptune_cash::protocol::consensus::block::block_selector::BlockSelector;
 use tokio::sync::Mutex;
+
+use crate::model::config::Config;
+use crate::model::transparent_utxo_tuple::TransparentUtxoTuple;
+use crate::neptune_rpc;
 
 #[derive(Debug, Clone)]
 pub struct AppStateInner {
@@ -26,7 +28,7 @@ pub struct AppStateInner {
 }
 
 impl AppStateInner {
-    pub fn token(&self) -> rpc_auth::Token {
+    pub fn token(&self) -> auth::Token {
         self.rpc_client.token
     }
 }

@@ -1,16 +1,16 @@
+use std::sync::Arc;
+
 use axum::extract::Path;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::response::Json;
 use neptune_cash::prelude::twenty_first::tip5::Digest;
-use std::sync::Arc;
 use tarpc::context;
 
+use crate::http_util::not_found_err;
+use crate::http_util::rpc_err;
 use crate::http_util::rpc_method_err;
-use crate::{
-    http_util::{not_found_err, rpc_err},
-    model::app_state::AppState,
-};
+use crate::model::app_state::AppState;
 
 #[axum::debug_handler]
 pub async fn utxo_digest(

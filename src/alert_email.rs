@@ -1,14 +1,15 @@
+use clap::Parser;
+use lettre::AsyncSmtpTransport;
+use lettre::AsyncTransport;
+use lettre::Message;
+use lettre::Tokio1Executor;
+use tracing::info;
+use tracing::warn;
+
 use crate::model::app_state::AppState;
 use crate::model::config::AlertConfig;
 use crate::model::config::Config;
 use crate::model::config::SmtpMode;
-use clap::Parser;
-use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
-use tracing::{info, warn};
-
-// pub fn alert_params_configured() -> bool {
-//     Config::parse().alert_config().is_some()
-// }
 
 pub fn check_alert_params() -> bool {
     match Config::parse().alert_config() {

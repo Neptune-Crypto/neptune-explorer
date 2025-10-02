@@ -1,17 +1,14 @@
+use std::collections::HashSet;
+use std::sync::Arc;
+
 use axum::extract::RawQuery;
 use axum::extract::State;
+use axum::response::IntoResponse;
 use axum::response::Redirect;
 use axum::response::Response;
-use std::sync::Arc;
-// use axum::routing::get;
-// use axum::routing::Router;
+
 use super::not_found::not_found_html_response;
-use axum::response::IntoResponse;
-use std::collections::HashSet;
-// use super::root::root;
-// use super::utxo::utxo_page;
 use crate::model::app_state::AppState;
-// use neptune_explorer::model::config::Config;
 
 /// This converts a query string into a path and redirects browser.
 ///

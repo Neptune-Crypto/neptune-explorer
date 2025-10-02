@@ -1,11 +1,12 @@
+use std::sync::Arc;
+
 use axum::extract::Path;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::response::Json;
-use neptune_cash::models::state::wallet::address::generation_address::GenerationReceivingAddress;
-use neptune_cash::rpc_server::error::RpcError;
-use neptune_cash::rpc_server::ProofOfWorkPuzzle;
-use std::sync::Arc;
+use neptune_cash::application::rpc::server::error::RpcError;
+use neptune_cash::application::rpc::server::proof_of_work_puzzle::ProofOfWorkPuzzle;
+use neptune_cash::state::wallet::address::generation_address::GenerationReceivingAddress;
 use tarpc::context;
 
 use crate::http_util::not_found_err;

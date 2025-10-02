@@ -1,8 +1,5 @@
-use crate::html::component::header::HeaderHtml;
-use crate::html::page::not_found::not_found_html_response;
-use crate::http_util::rpc_method_err;
-use crate::model::app_state::AppState;
-use crate::model::block_selector_extended::BlockSelectorExtended;
+use std::sync::Arc;
+
 use axum::extract::rejection::PathRejection;
 use axum::extract::Path;
 use axum::extract::State;
@@ -10,9 +7,14 @@ use axum::response::Html;
 use axum::response::Response;
 use html_escaper::Escape;
 use html_escaper::Trusted;
-use neptune_cash::models::blockchain::block::block_info::BlockInfo;
-use std::sync::Arc;
+use neptune_cash::protocol::consensus::block::block_info::BlockInfo;
 use tarpc::context;
+
+use crate::html::component::header::HeaderHtml;
+use crate::html::page::not_found::not_found_html_response;
+use crate::http_util::rpc_method_err;
+use crate::model::app_state::AppState;
+use crate::model::block_selector_extended::BlockSelectorExtended;
 
 #[axum::debug_handler]
 pub async fn block_page(

@@ -1,32 +1,36 @@
-use crate::alert_email;
-use crate::model::app_state::AppState;
-use crate::model::config::Config;
-use crate::model::transparent_utxo_tuple::TransparentUtxoTuple;
+use std::net::Ipv4Addr;
+use std::net::SocketAddr;
+use std::sync::Arc;
+
 use anyhow::Context;
 use chrono::DateTime;
 use chrono::TimeDelta;
 use chrono::Utc;
 use clap::Parser;
 use neptune_cash::api::export::Announcement;
-use neptune_cash::config_models::data_directory::DataDirectory;
-use neptune_cash::config_models::network::Network;
-use neptune_cash::models::blockchain::block::block_height::BlockHeight;
-use neptune_cash::models::blockchain::block::block_info::BlockInfo;
-use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
+use neptune_cash::api::export::Network;
+use neptune_cash::application::config::data_directory::DataDirectory;
+use neptune_cash::application::rpc::auth;
+use neptune_cash::application::rpc::server::error::RpcError;
+use neptune_cash::application::rpc::server::RPCClient;
+use neptune_cash::application::rpc::server::RpcResult;
 use neptune_cash::prelude::tasm_lib::prelude::Digest;
-use neptune_cash::rpc_auth;
-use neptune_cash::rpc_server::error::RpcError;
-use neptune_cash::rpc_server::RPCClient;
-use neptune_cash::rpc_server::RpcResult;
+use neptune_cash::protocol::consensus::block::block_height::BlockHeight;
+use neptune_cash::protocol::consensus::block::block_info::BlockInfo;
+use neptune_cash::protocol::consensus::block::block_selector::BlockSelector;
 use neptune_cash::util_types::mutator_set::addition_record::AdditionRecord;
-use std::net::Ipv4Addr;
-use std::net::SocketAddr;
-use std::sync::Arc;
 use tarpc::client;
 use tarpc::context;
 use tarpc::tokio_serde::formats::Json as RpcJson;
 use tokio::sync::Mutex;
-use tracing::{debug, info, warn};
+use tracing::debug;
+use tracing::info;
+use tracing::warn;
+
+use crate::alert_email;
+use crate::model::app_state::AppState;
+use crate::model::config::Config;
+use crate::model::transparent_utxo_tuple::TransparentUtxoTuple;
 
 #[cfg(feature = "mock")]
 const MOCK_KEY: &str = "MOCK";
@@ -34,7 +38,7 @@ const MOCK_KEY: &str = "MOCK";
 #[derive(Debug, Clone)]
 pub struct AuthenticatedClient {
     pub client: RPCClient,
-    pub token: rpc_auth::Token,
+    pub token: auth::Token,
     pub network: Network,
 }
 
@@ -51,7 +55,7 @@ impl AuthenticatedClient {
     pub async fn block_info(
         &self,
         ctx: ::tarpc::context::Context,
-        token: rpc_auth::Token,
+        token: auth::Token,
         block_selector: BlockSelector,
     ) -> ::core::result::Result<RpcResult<Option<BlockInfo>>, ::tarpc::client::RpcError> {
         let rpc_result = self.client.block_info(ctx, token, block_selector).await;
@@ -94,7 +98,7 @@ impl AuthenticatedClient {
     pub async fn utxo_digest(
         &self,
         ctx: ::tarpc::context::Context,
-        token: rpc_auth::Token,
+        token: auth::Token,
         leaf_index: u64,
         _transparent_utxos_cache: Arc<Mutex<Vec<TransparentUtxoTuple>>>,
     ) -> ::core::result::Result<RpcResult<Option<Digest>>, ::tarpc::client::RpcError> {
@@ -124,7 +128,7 @@ impl AuthenticatedClient {
     pub async fn announcements_in_block(
         &self,
         ctx: ::tarpc::context::Context,
-        token: rpc_auth::Token,
+        token: auth::Token,
         block_selector: BlockSelector,
     ) -> Result<Result<Option<Vec<Announcement>>, RpcError>, ::tarpc::client::RpcError> {
         let rpc_result = self
@@ -190,7 +194,7 @@ impl AuthenticatedClient {
     pub async fn addition_record_indices_for_block(
         &self,
         ctx: ::tarpc::context::Context,
-        token: rpc_auth::Token,
+        token: auth::Token,
         block_selector: BlockSelector,
         _addition_records: &[AdditionRecord],
     ) -> ::core::result::Result<
@@ -249,12 +253,12 @@ impl AuthenticatedClient {
 pub async fn gen_authenticated_rpc_client() -> Result<AuthenticatedClient, anyhow::Error> {
     let client = gen_rpc_client().await?;
 
-    let rpc_auth::CookieHint {
+    let auth::CookieHint {
         data_directory,
         network,
     } = get_cookie_hint(&client, &None).await?;
 
-    let token: rpc_auth::Token = rpc_auth::Cookie::try_load(&data_directory).await?.into();
+    let token: auth::Token = auth::Cookie::try_load(&data_directory).await?.into();
 
     Ok(AuthenticatedClient {
         client,
@@ -288,14 +292,14 @@ pub async fn gen_rpc_client() -> Result<RPCClient, anyhow::Error> {
 async fn get_cookie_hint(
     client: &RPCClient,
     data_dir: &Option<std::path::PathBuf>,
-) -> anyhow::Result<rpc_auth::CookieHint> {
+) -> anyhow::Result<auth::CookieHint> {
     async fn fallback(
         client: &RPCClient,
         data_dir: &Option<std::path::PathBuf>,
-    ) -> anyhow::Result<rpc_auth::CookieHint> {
+    ) -> anyhow::Result<auth::CookieHint> {
         let network = client.network(context::current()).await??;
         let data_directory = DataDirectory::get(data_dir.to_owned(), network)?;
-        Ok(rpc_auth::CookieHint {
+        Ok(auth::CookieHint {
             data_directory,
             network,
         })

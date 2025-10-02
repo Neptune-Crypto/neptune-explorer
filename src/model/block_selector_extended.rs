@@ -1,10 +1,12 @@
-use super::height_or_digest::HeightOrDigest;
-use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
-use neptune_cash::models::blockchain::block::block_selector::BlockSelectorParseError;
+use std::str::FromStr;
+
+use neptune_cash::protocol::consensus::block::block_selector::BlockSelector;
+use neptune_cash::protocol::consensus::block::block_selector::BlockSelectorParseError;
 use serde::de::Error;
 use serde::Deserialize;
 use serde::Deserializer;
-use std::str::FromStr;
+
+use super::height_or_digest::HeightOrDigest;
 
 /// newtype for `BlockSelector` that provides ability to parse `height_or_digest/value`.
 ///

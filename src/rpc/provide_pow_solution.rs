@@ -1,15 +1,17 @@
-use crate::http_util::rpc_err;
-use crate::http_util::rpc_method_err;
-use crate::model::app_state::AppState;
+use std::sync::Arc;
+
 use axum::extract::State;
 use axum::response::Json;
 use axum::response::Response;
-use neptune_cash::models::blockchain::block::block_header::BlockPow;
 use neptune_cash::prelude::twenty_first::tip5::Digest;
+use neptune_cash::protocol::consensus::block::block_header::BlockPow;
 use serde::Deserialize;
 use serde::Serialize;
-use std::sync::Arc;
 use tarpc::context;
+
+use crate::http_util::rpc_err;
+use crate::http_util::rpc_method_err;
+use crate::model::app_state::AppState;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PowSolution {
