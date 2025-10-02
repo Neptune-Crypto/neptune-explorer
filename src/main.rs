@@ -16,6 +16,7 @@ use neptune_explorer::rpc::block_info::block_info;
 use neptune_explorer::rpc::circulating_supply::circulating_supply;
 use neptune_explorer::rpc::pow_puzzle::pow_puzzle;
 use neptune_explorer::rpc::provide_pow_solution::provide_pow_solution;
+use neptune_explorer::rpc::total_supply::total_supply;
 use neptune_explorer::rpc::utxo_digest::utxo_digest;
 use tower_http::services::ServeDir;
 use tracing::info;
@@ -60,6 +61,7 @@ pub fn setup_routes(app_state: AppState) -> Router {
         .route("/rpc/utxo_digest/:index", get(utxo_digest))
         .route("/rpc/pow_puzzle/*address", get(pow_puzzle))
         .route("/rpc/circulating_supply", get(circulating_supply))
+        .route("/rpc/total_supply", get(total_supply))
         .route("/rpc/provide_pow_solution", post(provide_pow_solution))
         // -- Dynamic HTML pages --
         .route("/", get(root))
