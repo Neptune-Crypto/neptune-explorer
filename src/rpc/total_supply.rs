@@ -10,12 +10,12 @@ use crate::http_util::rpc_method_err;
 use crate::model::app_state::AppState;
 use crate::shared::monetary_supplies;
 
-/// Return the total monetary supply, the sum of the timeloced and liquid
-/// supply. Assumes all redemptions on the old chain have successfully been
-/// made. Returned unit is nau, Neptune Atomic Units. To convert to number of
-/// coins, divide by $4*10^{30}$.
+/// Return the current total monetary supply, the sum of the timeloced and
+/// liquid supply. Assumes all redemptions on the old chain have successfully
+/// been made. Returned unit is in number of coins. To convert to number of
+/// nau, multiply by $4*10^{30}$.
 #[axum::debug_handler]
-pub async fn total_supply(State(state): State<Arc<AppState>>) -> Result<Json<f64>, Response> {
+pub async fn total_supply(State(state): State<Arc<AppState>>) -> Result<Json<i32>, Response> {
     let s = state.load();
 
     let block_height = s
@@ -27,5 +27,5 @@ pub async fn total_supply(State(state): State<Arc<AppState>>) -> Result<Json<f64
 
     let (_, total_supply) = monetary_supplies(block_height);
 
-    Ok(Json(total_supply.to_nau_f64()))
+    Ok(Json(total_supply.ceil_num_whole_coins()))
 }
