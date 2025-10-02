@@ -13,6 +13,7 @@ use neptune_explorer::model::app_state::AppState;
 use neptune_explorer::neptune_rpc;
 use neptune_explorer::rpc::block_digest::block_digest;
 use neptune_explorer::rpc::block_info::block_info;
+use neptune_explorer::rpc::circulating_supply::circulating_supply;
 use neptune_explorer::rpc::pow_puzzle::pow_puzzle;
 use neptune_explorer::rpc::provide_pow_solution::provide_pow_solution;
 use neptune_explorer::rpc::utxo_digest::utxo_digest;
@@ -58,6 +59,7 @@ pub fn setup_routes(app_state: AppState) -> Router {
         .route("/rpc/block_digest/*selector", get(block_digest))
         .route("/rpc/utxo_digest/:index", get(utxo_digest))
         .route("/rpc/pow_puzzle/*address", get(pow_puzzle))
+        .route("/rpc/circulating_supply", get(circulating_supply))
         .route("/rpc/provide_pow_solution", post(provide_pow_solution))
         // -- Dynamic HTML pages --
         .route("/", get(root))
