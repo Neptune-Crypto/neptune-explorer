@@ -2,8 +2,19 @@
 name = "neptune-explorer"
 version = "0.1.0"
 edition = "2021"
+default-run = "neptune-explorer"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "high_rate_attack"
+path = "src/bin/high_rate_attack.rs"
+required-features = ["attacks"]
+
+[[bin]]
+name = "scraper"
+path = "src/bin/scraper.rs"
+required-features = ["attacks"]
 
 [dependencies]
 axum = { version = "0.7.9", features = ["macros"] }
@@ -40,6 +51,11 @@ indexmap = "2.7.0"
 
 blake3 = { version = "1.8.2", optional = true }
 rand = { version = "0.9.2", optional = true }
+reqwest = { version = "0.12.23", optional  = true }
+log = {version = "0.4.28", optional = true}
+env_logger = {version = "0.11.8", optional = true}
+regex = {version = "1.11.3", optional = true }
+
 
 #[dev-dependencies]
 test-strategy = "0.4.3"
@@ -52,3 +68,4 @@ neptune-cash = { git = "https://github.com/Neptune-Crypto/neptune-core.git", bra
 
 [features]
 mock = ["dep:blake3", "dep:rand"]
+attacks = ["reqwest", "log", "env_logger", "regex", "dep:rand"]
