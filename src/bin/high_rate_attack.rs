@@ -1,27 +1,31 @@
 use futures::future::join_all;
+use neptune_explorer::path::ExplorerPath;
+use rand::rng;
+use rand::Rng;
 use reqwest::Client;
 use tokio::time::Instant;
 
+///
+/// Run with: `> cargo run --bin high_rate_attack --features "attacks"`
 #[tokio::main]
 async fn main() {
     let client = Client::new();
-    let url = "http://127.0.0.1:3000/your_endpoint";
-    let num_requests = 200; // adjust as needed
+    let root_url = "http://127.0.0.1:3000/";
+    let num_requests = 2000; // adjust as needed
     let concurrency = 20; // parallel tasks
 
     let start = Instant::now();
+    let mut rng = rng();
     let futures = (0..num_requests).map(|_| {
+        let path = rng.random::<ExplorerPath>().to_string();
         let client = &client;
         async move {
-            let _ = client.get(url).send().await;
+            let _ = client.get([root_url, &path].concat()).send().await;
         }
     });
 
     join_all(futures).await;
 
     let elapsed = start.elapsed();
-    println!(
-        "Sent {} requests in {:.2?} (concurrency {})",
-        num_requests, elapsed, concurrency
-    );
+    println!("Sent {num_requests} requests in {elapsed:.2?} (concurrency {concurrency})");
 }
