@@ -240,7 +240,7 @@ impl AuthenticatedClient {
                         },
                     )
                 })
-                .collect::<Vec<(_, _)>>();
+                .collect();
             return Ok(Ok(addition_record_indices));
         }
 

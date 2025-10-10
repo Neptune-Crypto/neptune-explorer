@@ -52,7 +52,7 @@ async fn main() {
                         if resp.status().is_success() {
                             match resp.text().await {
                                 Ok(text) => {
-                                    info!("Success fetching {}", url);
+                                    info!("Success fetching {url}");
                                     let mut urls_guard = urls_clone.lock().unwrap();
                                     for cap in href_regex.captures_iter(&text) {
                                         let href = &cap[1];
@@ -61,16 +61,13 @@ async fn main() {
                                         {
                                             let normalized = parsed_url.as_str();
                                             if urls_guard.insert(normalized.to_owned()) {
-                                                info!(
-                                                    "Added new URL to dictionary: {}",
-                                                    normalized
-                                                );
+                                                info!("Added new URL to dictionary: {normalized}");
                                             }
                                         }
                                     }
                                 }
                                 Err(e) => {
-                                    warn!("Failed to read response body from {}: {}", url, e);
+                                    warn!("Failed to read response body from {url}: {e}");
                                 }
                             }
                         } else {
@@ -79,9 +76,9 @@ async fn main() {
                     }
                     Err(err) => {
                         if err.is_timeout() {
-                            warn!("Timeout fetching {}", url);
+                            warn!("Timeout fetching {url}");
                         } else {
-                            error!("Error fetching {}: {}", url, err);
+                            error!("Error fetching {url}: {err}");
                         }
                     }
                 }
