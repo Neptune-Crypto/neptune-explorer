@@ -6,7 +6,9 @@ use clap::Parser;
 use neptune_cash::api::export::Network;
 use neptune_cash::application::rpc::auth;
 use neptune_cash::prelude::twenty_first::tip5::Digest;
-use neptune_cash::protocol::consensus::block::block_selector::BlockSelector;
+use neptune_cash::protocol::consensus::block::block_selector::{
+    BlockSelector, BlockSelectorLiteral,
+};
 use tokio::sync::Mutex;
 
 use crate::model::config::Config;
@@ -59,7 +61,7 @@ impl AppState {
             .block_digest(
                 tarpc::context::current(),
                 rpc_client.token,
-                BlockSelector::Genesis,
+                BlockSelector::Special(BlockSelectorLiteral::Genesis),
             )
             .await
             .with_context(|| "Failed calling neptune-core api: block_digest")?

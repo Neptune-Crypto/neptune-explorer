@@ -1,5 +1,5 @@
+use futures::future::join_all;
 use reqwest::Client;
-use tokio::sync::futures;
 use tokio::time::Instant;
 
 #[tokio::main]
@@ -17,7 +17,7 @@ async fn main() {
         }
     });
 
-    futures::future::join_all(futures).await;
+    join_all(futures).await;
 
     let elapsed = start.elapsed();
     println!(

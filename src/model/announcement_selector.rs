@@ -4,6 +4,7 @@ use std::str::FromStr;
 use neptune_cash::api::export::BlockHeight;
 use neptune_cash::prelude::tasm_lib::prelude::Digest;
 use neptune_cash::protocol::consensus::block::block_selector::BlockSelector;
+use neptune_cash::protocol::consensus::block::block_selector::BlockSelectorLiteral;
 use serde::de::Error;
 use serde::Deserialize;
 use serde::Deserializer;
@@ -59,11 +60,11 @@ impl FromStr for AnnouncementSelector {
         let (block_selector, index) = match parts.as_slice() {
             ["tip", index] => {
                 let index = index.parse::<u64>().map_err(Self::Err::TipIndex)?;
-                (BlockSelector::Tip, index)
+                (BlockSelector::Special(BlockSelectorLiteral::Tip), index)
             }
             ["genesis", index] => index
                 .parse::<u64>()
-                .map(|i| (BlockSelector::Genesis, i))
+                .map(|i| (BlockSelector::Special(BlockSelectorLiteral::Genesis), i))
                 .map_err(Self::Err::GenesisIndex)?,
             ["height", number, index] => {
                 let height_as_u64 = number.parse::<u64>().map_err(Self::Err::BlockHeight)?;
@@ -129,8 +130,10 @@ impl Display for AnnouncementSelector {
             BlockSelector::Height(block_height) => {
                 write!(f, "height/{}/{}", block_height, self.index)
             }
-            BlockSelector::Genesis => write!(f, "genesis/{}", self.index),
-            BlockSelector::Tip => write!(f, "tip/{}", self.index),
+            BlockSelector::Special(BlockSelectorLiteral::Genesis) => {
+                write!(f, "genesis/{}", self.index)
+            }
+            BlockSelector::Special(BlockSelectorLiteral::Tip) => write!(f, "tip/{}", self.index),
         }
     }
 }
@@ -189,7 +192,7 @@ mod tests {
                     // Genesis selector
                     let index = u64::arbitrary(u)? as usize;
                     AnnouncementSelector {
-                        block_selector: BlockSelector::Genesis,
+                        block_selector: BlockSelector::Special(BlockSelectorLiteral::Genesis),
                         index,
                     }
                 }
@@ -197,7 +200,7 @@ mod tests {
                     // Tip selector
                     let index = u64::arbitrary(u)? as usize;
                     AnnouncementSelector {
-                        block_selector: BlockSelector::Tip,
+                        block_selector: BlockSelector::Special(BlockSelectorLiteral::Tip),
                         index,
                     }
                 }

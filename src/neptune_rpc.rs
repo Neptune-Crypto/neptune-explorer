@@ -240,8 +240,8 @@ impl AuthenticatedClient {
                         },
                     )
                 })
-                .collect::<HashMap<_, _>>();
-            return Ok(Ok(Some(addition_record_indices)));
+                .collect::<Vec<(_, _)>>();
+            return Ok(Ok(addition_record_indices));
         }
 
         // otherwise, return the original error

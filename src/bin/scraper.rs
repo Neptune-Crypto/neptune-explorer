@@ -1,4 +1,3 @@
-use env_logger;
 use log::LevelFilter;
 use log::{error, info, warn};
 use rand::seq::IteratorRandom;

@@ -34,7 +34,11 @@ impl FromStr for HeightOrDigest {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(match s.parse::<u64>() {
             Ok(h) => Self::Height(h.into()),
-            Err(_) => Self::Digest(Digest::try_from_hex(s)?),
+            Err(_) => {
+                let digest = Digest::try_from_hex(s)
+                    .map_err(|_| BlockSelectorParseError::InvalidSelector(s.to_string()))?;
+                Self::Digest(digest)
+            }
         })
     }
 }
