@@ -1,3 +1,4 @@
+use axum::http::HeaderValue;
 use futures::future::join_all;
 use neptune_explorer::path::ExplorerPath;
 use rand::rng;
@@ -20,7 +21,11 @@ async fn main() {
         let path = rng.random::<ExplorerPath>().to_string();
         let client = &client;
         async move {
-            let _ = client.get([root_url, &path].concat()).send().await;
+            let _ = client
+                .get([root_url, &path].concat())
+                .header("X-Real-IP-Override", HeaderValue::from_static("1.2.3.4"))
+                .send()
+                .await;
         }
     });
 
