@@ -1,7 +1,15 @@
+use std::net::IpAddr;
+use std::net::SocketAddr;
+use std::str::FromStr;
+use std::time::Duration;
+
 use anyhow::Context;
+use axum::extract::FromRequestParts;
+use axum::http::request::Parts;
 use axum::routing::get;
 use axum::routing::post;
 use axum::routing::Router;
+use axum_gcra::RateLimitLayer;
 use neptune_explorer::alert_email;
 use neptune_explorer::html::page::announcement::announcement_page;
 use neptune_explorer::html::page::block::block_page;
@@ -47,9 +55,13 @@ async fn main() -> Result<(), anyhow::Error> {
 
     info!("Running on http://localhost:{port}");
 
-    axum::serve(listener, routes)
-        .await
-        .with_context(|| "Axum server encountered an error")?;
+    axum::serve(
+        listener,
+        routes.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .with_context(|| "Axum server encountered an error")?;
+
     Ok(())
 }
 
@@ -83,4 +95,61 @@ pub fn setup_routes(app_state: AppState) -> Router {
         .fallback(not_found_html_fallback)
         // add state
         .with_state(app_state.into())
+        // apply rate-limiting
+        .route_layer(
+            RateLimitLayer::<IpExtractor>::builder()
+                // default quota: 1 request every 10 milliseconds per IP
+                .with_default_quota(axum_gcra::gcra::Quota::simple(Duration::from_millis(10)))
+                .default_handle_error(), // Handles rate limit exceeded errors gracefully
+        )
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+struct IpExtractor {
+    ip: IpAddr,
+}
+
+#[axum::async_trait]
+impl<S> FromRequestParts<S> for IpExtractor
+where
+    S: Send + Sync,
+{
+    type Rejection = axum::response::Response;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let headers = &parts.headers;
+
+        #[cfg(feature = "attacks")]
+        {
+            if let Some(ip_header_value) = headers.get("X-Real-IP-Override") {
+                if let Ok(ip_str) = ip_header_value.to_str() {
+                    if let Ok(ip) = IpAddr::from_str(ip_str) {
+                        info!("hi from {ip}");
+                        return Ok(IpExtractor { ip });
+                    }
+                }
+            }
+        }
+
+        let ip = {
+            // If feature flag "attacks" is disabled, or if for whatever reason
+            // extracting the mock IP from the header "X-Real-IP-Override"
+            // false, fall back to the default: extracting the IP from the
+            // socket address.
+            let socket_ip = parts
+                .extensions
+                .get::<axum::extract::connect_info::ConnectInfo<std::net::SocketAddr>>()
+                .map(|connect_info| connect_info.0.ip());
+            if let Some(ip) = socket_ip {
+                ip
+            } else {
+                return Err(axum::response::Response::builder()
+                    .status(400)
+                    .body("No IP found".into())
+                    .unwrap());
+            }
+        };
+
+        Ok(IpExtractor { ip })
+    }
 }

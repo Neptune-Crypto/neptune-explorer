@@ -62,6 +62,7 @@ test-strategy = "0.4.3"
 proptest = "1.9.0"
 arbitrary = "1.4.2"
 proptest-arbitrary-interop = "0.1.0"
+axum_gcra = "0.1.1"
 
 [patch.crates-io]
 neptune-cash = { git = "https://github.com/Neptune-Crypto/neptune-core.git", rev = "71f471a526a13ddd41ab4400e1a873471d03ede6" }
