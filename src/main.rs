@@ -134,7 +134,7 @@ where
         let ip = {
             // If feature flag "attacks" is disabled, or if for whatever reason
             // extracting the mock IP from the header "X-Real-IP-Override"
-            // false, fall back to the default: extracting the IP from the
+            // fails, fall back to the default: extracting the IP from the
             // socket address.
             let socket_ip = parts
                 .extensions
