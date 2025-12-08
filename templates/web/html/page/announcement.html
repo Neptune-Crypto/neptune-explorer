@@ -114,6 +114,10 @@
                         <td style="text-align: right" class="mono">
                             {{output.utxo.get_native_currency_amount().display_n_decimals(5)}}
                             NPT
+                            {% if output.receiver_digest == Digest::default() { %}
+                            <br>
+                            <b>🔥 burned 🔥</b>
+                            {% } %}
                         </td>
                     </tr>
                     {% } %}
