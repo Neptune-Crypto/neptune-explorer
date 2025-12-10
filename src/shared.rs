@@ -37,6 +37,13 @@ pub(crate) fn monetary_supplies(
     liquid_supply += liquid_supply_current_generation;
     total_supply += liquid_supply_current_generation.scalar_mul(2);
 
+    // List of all burns is tracked on:
+    // https://talk.neptune.cash/t/list-of-known-burns/187
+    // https://web.archive.org/web/20251210115730/https://talk.neptune.cash/t/list-of-known-burns/187
+    let total_burn = NativeCurrencyAmount::coins_from_str("1526642.2").unwrap();
+    liquid_supply = liquid_supply - total_burn;
+    total_supply = total_supply - total_burn;
+
     // How much of timelocked miner rewards have been unlocked? Assume that the
     // timelock is exactly one generation long. In reality the timelock is
     // is defined in relation to timestamp and not block heights, so this is
