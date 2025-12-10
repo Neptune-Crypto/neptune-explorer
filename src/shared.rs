@@ -4,6 +4,7 @@ use neptune_cash::protocol::consensus::block::block_height::BLOCKS_PER_GENERATIO
 use neptune_cash::protocol::consensus::block::block_height::NUM_BLOCKS_SKIPPED_BECAUSE_REBOOT;
 use neptune_cash::protocol::consensus::block::Block;
 use neptune_cash::protocol::consensus::block::PREMINE_MAX_SIZE;
+use num_traits::ops::checked::CheckedSub;
 
 /// Return the pair (liquid supply, total supply)
 ///
@@ -40,9 +41,11 @@ pub(crate) fn monetary_supplies(
     // List of all burns is tracked on:
     // https://talk.neptune.cash/t/list-of-known-burns/187
     // https://web.archive.org/web/20251210115730/https://talk.neptune.cash/t/list-of-known-burns/187
-    let total_burn = NativeCurrencyAmount::coins_from_str("1526642.2").unwrap();
-    liquid_supply = liquid_supply - total_burn;
-    total_supply = total_supply - total_burn;
+    if block_height > 16999 {
+        let total_burn = NativeCurrencyAmount::coins_from_str("1526642.2").unwrap();
+        liquid_supply = liquid_supply.checked_sub(&total_burn).unwrap();
+        total_supply = total_supply.checked_sub(&total_burn).unwrap();
+    }
 
     // How much of timelocked miner rewards have been unlocked? Assume that the
     // timelock is exactly one generation long. In reality the timelock is

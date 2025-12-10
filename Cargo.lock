@@ -2027,6 +2027,7 @@ dependencies = [
  "lettre",
  "log",
  "neptune-cash",
+ "num-traits",
  "proptest",
  "proptest-arbitrary-interop",
  "rand 0.9.2",
