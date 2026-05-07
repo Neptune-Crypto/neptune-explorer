@@ -1,6 +1,5 @@
 use std::net::IpAddr;
 use std::net::SocketAddr;
-use std::str::FromStr;
 use std::time::Duration;
 
 use anyhow::Context;
@@ -117,10 +116,9 @@ where
     type Rejection = axum::response::Response;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        let headers = &parts.headers;
-
         #[cfg(feature = "attacks")]
         {
+            let headers = &parts.headers;
             if let Some(ip_header_value) = headers.get("X-Real-IP-Override") {
                 if let Ok(ip_str) = ip_header_value.to_str() {
                     if let Ok(ip) = IpAddr::from_str(ip_str) {

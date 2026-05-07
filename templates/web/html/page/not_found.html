@@ -2,34 +2,38 @@
 
 <head>
     <title>Not Found</title>
-{{html_escaper::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"), "/templates/web/html/components/head.html")))}}
+    {{boilerplate::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"),
+    "/templates/web/html/components/head.html")))}}
 </head>
 
 <body>
 
-<main class="container">
+    <main class="container">
 
-<article>
-<header class="center-text"><h3>Not found</h3></header>
-<section>
-These are not the droids you're looking for.
-</section>
+        <article>
+            <header class="center-text">
+                <h3>Not found</h3>
+            </header>
+            <section>
+                These are not the droids you're looking for.
+            </section>
 
-%% if self.error_msg.len() > 0 {
-<section>
-Hint: {{self.error_msg}}
-</section>
-%% }
-</article>
+            %% if self.error_msg.len() > 0 {
+            <section>
+                Hint: {{self.error_msg}}
+            </section>
+            %% }
+        </article>
 
-<article>
-    <p>
-        <a href="/">Home</a>
-        | <a href='/block/genesis'>Genesis</a>
-        | <a href='/block/tip'>Tip</a>
-    </p>
-</article>
+        <article>
+            <p>
+                <a href="/">Home</a>
+                | <a href='/block/genesis'>Genesis</a>
+                | <a href='/block/tip'>Tip</a>
+            </p>
+        </article>
 
-</main>
+    </main>
 </body>
+
 </html>

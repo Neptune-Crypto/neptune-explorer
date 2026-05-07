@@ -2,7 +2,7 @@
 
 <head>
     <title>{{self.state.config.site_name}}: (network: {{self.state.network}})</title>
-    {{ html_escaper::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"),
+    {{ boilerplate::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"),
     "/templates/web/html/components/head.html"))) }}
 </head>
 

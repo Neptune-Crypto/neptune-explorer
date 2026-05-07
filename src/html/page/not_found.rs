@@ -1,7 +1,6 @@
 use axum::http::StatusCode;
 use axum::response::Html;
 use axum::response::Response;
-use html_escaper::Escape;
 
 use crate::http_util::not_found_html_err;
 use crate::http_util::not_found_html_handler;

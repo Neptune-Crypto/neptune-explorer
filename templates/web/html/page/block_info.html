@@ -3,7 +3,7 @@
 
 <head>
     <title>{{self.header.state.config.site_name}}: Block Height {{self.block_info.height}}</title>
-    {{html_escaper::Trusted(include_str!(concat!(env!("CARGO_MANIFEST_DIR"),"/templates/web/html/components/head.html")))}}
+    {{boilerplate::Trusted(include_str!(concat!(env!("CARGO_MANIFEST_DIR"),"/templates/web/html/components/head.html")))}}
 </head>
 
 <body>

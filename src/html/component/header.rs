@@ -1,5 +1,3 @@
-use html_escaper::Escape;
-
 use crate::model::app_state::AppStateInner;
 
 #[derive(Debug, Clone, boilerplate::Boilerplate)]
