@@ -22,7 +22,8 @@ boilerplate = { version = "1.0.1" }
 chrono = "0.4.42"
 clap = "4.5.50"
 lettre = { version = "0.11.19", features = ["tokio1-native-tls"] }
-neptune-cash = "0.10.2"
+# neptune-cash = "0.10.2"
+neptune-cash = { git = "https://github.com/Neptune-Crypto/neptune-core.git", rev = "8a730f3bf93fd5f9a54740ca7844c2ba435f274c" }
 num-traits = "0.2"
 readonly = "0.2.13"
 serde = { version = "1.0.228", features = ["derive"] }
@@ -63,9 +64,6 @@ proptest = "1.9.0"
 arbitrary = "1.4.2"
 proptest-arbitrary-interop = "0.1.0"
 axum_gcra = "0.1.1"
-
-[patch.crates-io]
-neptune-cash = { git = "https://github.com/Neptune-Crypto/neptune-core.git", rev = "71f471a526a13ddd41ab4400e1a873471d03ede6" }
 
 [features]
 mock = ["dep:blake3", "dep:rand"]

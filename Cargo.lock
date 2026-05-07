@@ -3074,8 +3074,7 @@ dependencies = [
 [[package]]
 name = "neptune-cash"
 version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3daee73f0d2a6c0c6b25dd5469f0b4f6141db8898f0a23f9f17078f9c617919b"
+source = "git+https://github.com/Neptune-Crypto/neptune-core.git?rev=8a730f3bf93fd5f9a54740ca7844c2ba435f274c#8a730f3bf93fd5f9a54740ca7844c2ba435f274c"
 dependencies = [
  "aead",
  "aes-gcm",
@@ -3180,8 +3179,7 @@ dependencies = [
 [[package]]
 name = "neptune-rpc-macros"
 version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f6642887960c9d0bea117ecf7a686aa137fde48102f8fc183ce248769edac6c"
+source = "git+https://github.com/Neptune-Crypto/neptune-core.git?rev=8a730f3bf93fd5f9a54740ca7844c2ba435f274c#8a730f3bf93fd5f9a54740ca7844c2ba435f274c"
 dependencies = [
  "convert_case",
  "quote",
@@ -6501,8 +6499,3 @@ name = "zmij"
 version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b8848ee67ecc8aedbaf3e4122217aff892639231befc6a1b58d29fff4c2cabaa"
-
-[[patch.unused]]
-name = "neptune-cash"
-version = "0.4.0"
-source = "git+https://github.com/Neptune-Crypto/neptune-core.git?rev=71f471a526a13ddd41ab4400e1a873471d03ede6#71f471a526a13ddd41ab4400e1a873471d03ede6"

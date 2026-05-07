@@ -65,6 +65,23 @@
                         {% } %}
                     </td>
                 </tr>
+                %% if self.block_info.lustration_status.is_some() {
+                <tr>
+                    <td>Lustration counter
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">
+                                Remaining amount that is allowed through the lustration barrier, AKA transparency
+                                gateway.
+                                As long as this number is positive, we can be sure a past soundness error has not
+                                inflated the monetary supply.
+                                Lustration threshold:
+                                {{self.block_info.lustration_status.unwrap().max_lustrating_aocl_leaf_index}}
+                            </span>
+                        </span>
+                    </td>
+                    <td>{{self.block_info.lustration_status.unwrap().counter}}</td>
+                </tr>
+                %% }
                 <tr>
                     <td>Difficulty</td>
                     <td>{{self.block_info.difficulty.separate_with_commas()}}</td>
