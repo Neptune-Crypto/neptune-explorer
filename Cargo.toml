@@ -18,29 +18,28 @@ required-features = ["attacks"]
 
 [dependencies]
 axum = { version = "0.7.9", features = ["macros"] }
+boilerplate = { version = "1.0.1" }
+chrono = "0.4.42"
+clap = "4.5.50"
+html-escaper = "0.2.0"
+lettre = { version = "0.11.19", features = ["tokio1-native-tls"] }
+neptune-cash = "0.10.2"
 num-traits = "0.2"
+readonly = "0.2.13"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
-tokio = { version = "1.48.0", features = ["full", "tracing"] }
-tracing = "0.1"
-tracing-subscriber = "0.3"
-
-neptune-cash = "0.4.0"
 tarpc = { version = "^0.34", features = [
     "tokio1",
     "serde-transport",
     "serde-transport-json",
     "tcp",
 ] }
-clap = "4.5.50"
 thiserror = "1.0.69"
-boilerplate = { version = "1.0.1" }
-html-escaper = "0.2.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+tokio = { version = "1.48.0", features = ["full", "tracing"] }
 tower-http = { version = "0.5.2", features = ["fs"] }
-readonly = "0.2.13"
 url = "2.5.7"
-lettre = { version = "0.11.19", features = ["tokio1-native-tls"] }
-chrono = "0.4.42"
 
 # only should be used inside main.rs, for the binary.
 anyhow = "1.0.100"
