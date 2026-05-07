@@ -2,3 +2,9 @@
 # see: https://docs.rs/console-subscriber/latest/console_subscriber/
 [build]
 rustflags = ["--cfg", "tokio_unstable"]
+
+[env]
+# workaround for dependency `leveldb-sys v2.0.9`
+CMAKE_POLICY_VERSION_MINIMUM = "3.5"
+CC = "clang"
+CXX = "clang++"
