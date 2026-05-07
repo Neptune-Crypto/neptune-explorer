@@ -12,7 +12,7 @@
             <img src="/image/neptune-logo-circle-small.png" align="right" />
             {{self.state.config.site_name}} (network: {{self.state.network}})
         </h1>
-        The blockchain tip is at height: {{self.tip_height}}
+        The blockchain tip is at height: {{self.tip_height.separate_with_commas()}}
     </header>
 
     <main class="container">

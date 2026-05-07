@@ -9,6 +9,7 @@ use html_escaper::Escape;
 use html_escaper::Trusted;
 use neptune_cash::protocol::consensus::block::block_info::BlockInfo;
 use tarpc::context;
+use thousands::Separable;
 
 use crate::html::component::header::HeaderHtml;
 use crate::html::page::not_found::not_found_html_response;

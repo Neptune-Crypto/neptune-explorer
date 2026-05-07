@@ -38,15 +38,15 @@
                                 bytes.</span>
                         </span>
                     </td>
-                    <td>{{self.block_info.size}}</td>
+                    <td>{{self.block_info.size.separate_with_commas()}}</td>
                 </tr>
                 <tr>
                     <td>Inputs</td>
-                    <td>{{self.block_info.num_inputs}}<br /></td>
+                    <td>{{self.block_info.num_inputs.separate_with_commas()}}<br /></td>
                 </tr>
                 <tr>
                     <td>Outputs</td>
-                    <td>{{self.block_info.num_outputs}}</td>
+                    <td>{{self.block_info.num_outputs.separate_with_commas()}}</td>
                 </tr>
                 <tr>
                     <td>Announcements
@@ -67,7 +67,7 @@
                 </tr>
                 <tr>
                     <td>Difficulty</td>
-                    <td>{{self.block_info.difficulty}}</td>
+                    <td>{{self.block_info.difficulty.separate_with_commas()}}</td>
                 </tr>
                 <tr>
                     <td>Cumulative Proof-Of-Work
@@ -76,7 +76,7 @@
                                 to this block.</span>
                         </span>
                     </td>
-                    <td>{{self.block_info.cumulative_proof_of_work}}</td>
+                    <td>{{self.block_info.cumulative_proof_of_work.separate_with_commas()}}</td>
                 </tr>
                 <tr>
                     <td>Coinbase

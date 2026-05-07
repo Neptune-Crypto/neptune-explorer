@@ -6,6 +6,7 @@ use axum::response::Response;
 use html_escaper::Escape;
 use neptune_cash::api::export::BlockHeight;
 use tarpc::context;
+use thousands::Separable;
 
 use crate::html::page::not_found::not_found_html_response;
 use crate::http_util::rpc_method_err;
