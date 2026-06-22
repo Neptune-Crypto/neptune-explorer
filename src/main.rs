@@ -15,12 +15,14 @@ use neptune_explorer::html::page::block::block_page;
 use neptune_explorer::html::page::not_found::not_found_html_fallback;
 use neptune_explorer::html::page::redirect_qs_to_path::redirect_query_string_to_path;
 use neptune_explorer::html::page::root::root;
+use neptune_explorer::html::page::tx_output::tx_output_page;
 use neptune_explorer::html::page::utxo::utxo_page;
 use neptune_explorer::model::app_state::AppState;
 use neptune_explorer::neptune_rpc;
 use neptune_explorer::rpc::block_digest::block_digest;
 use neptune_explorer::rpc::block_info::block_info;
 use neptune_explorer::rpc::circulating_supply::circulating_supply;
+use neptune_explorer::rpc::output_status::output_status;
 use neptune_explorer::rpc::pow_puzzle::pow_puzzle;
 use neptune_explorer::rpc::provide_pow_solution::provide_pow_solution;
 use neptune_explorer::rpc::total_supply::total_supply;
@@ -70,6 +72,7 @@ pub fn setup_routes(app_state: AppState) -> Router {
         .route("/rpc/block_info/*selector", get(block_info))
         .route("/rpc/block_digest/*selector", get(block_digest))
         .route("/rpc/utxo_digest/:index", get(utxo_digest))
+        .route("/rpc/output_status/:addition_record", get(output_status))
         .route("/rpc/pow_puzzle/*address", get(pow_puzzle))
         .route("/rpc/circulating_supply", get(circulating_supply))
         .route("/rpc/total_supply", get(total_supply))
@@ -78,6 +81,7 @@ pub fn setup_routes(app_state: AppState) -> Router {
         .route("/", get(root))
         .route("/block/*selector", get(block_page))
         .route("/utxo/:value", get(utxo_page))
+        .route("/output/:addition_record", get(tx_output_page))
         .route("/announcement/*selector", get(announcement_page))
         // -- Rewrite query-strings to path --
         .route("/rqs", get(redirect_query_string_to_path))

@@ -1,0 +1,83 @@
+<html>
+
+<head>
+    <title>{{self.header.state.config.site_name}}: Output {{self.addition_record_hex}}</title>
+    {{boilerplate::Trusted(include_str!( concat!(env!("CARGO_MANIFEST_DIR"),
+    "/templates/web/html/components/head.html")))}}
+</head>
+
+<body>
+    {{Trusted(self.header.to_string())}}
+
+    <main class="container">
+
+        <article>
+            <summary>
+                <span class="tooltip">ⓘ
+                    <span class="tooltiptext">
+                        A transaction output is committed to the blockchain as an "addition record": the hash of the
+                        (UTXO, sender randomness, receiver digest) triple. This page reports whether that output is
+                        unknown, waiting in the mempool, or mined into a canonical block.
+                    </span>
+                </span>
+                Transaction Output Status
+            </summary>
+            <table class="striped">
+                <tr>
+                    <td>Addition Record</td>
+                    <td><span class="mono">{{self.addition_record_hex}}</span></td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td>
+                        {% if let Some(digest_hex) = &self.mined_block_digest_hex { %}
+                        {% if let Some(height) = &self.mined_height { %}
+                        <strong>Mined</strong> &mdash; confirmed in canonical block at height
+                        <a href='/block/digest/{{digest_hex}}'>{{height}}</a>.
+                        {% } else { %}
+                        <strong>Mined</strong> &mdash; confirmed in canonical block
+                        <a href='/block/digest/{{digest_hex}}'>{{digest_hex}}</a>.
+                        {% } %}
+                        {% } else if self.in_mempool { %}
+                        <strong>In mempool</strong> &mdash; produced by a transaction currently waiting in the mempool;
+                        not yet mined.
+                        {% } else { %}
+                        <strong>Not known</strong> &mdash; not in the mempool and not in any canonical block.
+                        {% } %}
+                    </td>
+                </tr>
+            </table>
+        </article>
+
+        <article>
+            <details open>
+                <summary>Track another output</summary>
+                <form action="/rqs" method="get">
+                    <input type="hidden" name="_ig" value="l" />
+                    <span class="tooltip">ⓘ
+                        <span class="tooltiptext">
+                            The 80-character hexadecimal addition record (the canonical commitment of a transaction
+                            output), as shown for outputs elsewhere in this explorer.
+                        </span>
+                    </span>
+                    Addition record (hex):
+                    <input type="text" size="80" name="output" class="mono" value="{{self.addition_record_hex}}" />
+                    <input type="submit" name="l" value="Track Output" />
+                </form>
+                Machine-readable:
+                <a href='/rpc/output_status/{{self.addition_record_hex}}'>/rpc/output_status/{{self.addition_record_hex}}</a>
+            </details>
+        </article>
+
+        <article>
+            <p>
+                <a href="/">Home</a>
+                | <a href='/block/genesis'>Genesis</a>
+                | <a href='/block/tip'>Tip</a>
+            </p>
+        </article>
+
+    </main>
+</body>
+
+</html>
