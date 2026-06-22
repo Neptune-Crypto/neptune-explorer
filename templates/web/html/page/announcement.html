@@ -124,6 +124,48 @@
                 </table>
                 {% } %}
             </details>
+            {% }, AnnouncementType::Lustration(lustration) => { %}
+            <details open>
+                <summary>Lustration (revealed spent input)</summary>
+                <p>
+                    This input was <em>lustrated</em>. Because its AOCL leaf index
+                    is at or below the network's lustration threshold, the sender
+                    was required to publicly reveal the input's plaintext data
+                    on-chain.
+                </p>
+                <table class="striped">
+                    <tr>
+                        <th colspan="2" style="font-weight: bold;">revealed input</th>
+                    </tr>
+                    <tr>
+                        <td>Addition record (canonical commitment):</td>
+                        <td class="mono">{{lustration.addition_record().canonical_commitment.to_hex()}}</td>
+                    </tr>
+                    <tr>
+                        <td>AOCL leaf index:</td>
+                        <td class="mono">{{lustration.aocl_leaf_index}}</td>
+                    </tr>
+                    <tr>
+                        <td>UTXO digest:</td>
+                        <td class="mono">{{Tip5::hash(&lustration.utxo).to_hex()}}</td>
+                    </tr>
+                    <tr>
+                        <td>sender randomness:</td>
+                        <td class="mono">{{lustration.sender_randomness.to_hex()}}</td>
+                    </tr>
+                    <tr>
+                        <td>receiver preimage:</td>
+                        <td class="mono">{{lustration.receiver_preimage.to_hex()}}</td>
+                    </tr>
+                    <tr>
+                        <td>Lustrated amount:</td>
+                        <td style="text-align: right" class="mono">
+                            {{lustration.utxo.get_native_currency_amount().display_n_decimals(5)}}
+                            NPT
+                        </td>
+                    </tr>
+                </table>
+            </details>
             {% }, AnnouncementType::Unknown(payload) => { %}
             <details>
                 <summary>Unknown Type</summary>

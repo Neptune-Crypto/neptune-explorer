@@ -63,6 +63,25 @@
 
         <article>
             <details open>
+                <summary>Transaction Output Lookup</summary>
+                <form action="/rqs" method="get">
+                    <input type="hidden" name="_ig" value="l" />
+                    <span class="tooltip">ⓘ
+                        <span class="tooltiptext">
+                            Track a transaction output by its addition record: the 80-character hexadecimal
+                            canonical commitment of the output. Reports whether it is not known, in the mempool,
+                            or mined into a canonical block.
+                        </span>
+                    </span>
+                    Addition record (hex):
+                    <input type="text" size="80" name="output" class="mono" />
+                    <input type="submit" name="l" value="Track Output" />
+                </form>
+            </details>
+        </article>
+
+        <article>
+            <details open>
                 <summary>Announcement Lookup</summary>
                 <form action="/rqs" method="get">
                     <input type="hidden" name="announcement" value="" />
@@ -138,6 +157,19 @@
 
                         <ul>
                             <li><a href="/rpc/utxo_digest/2">/rpc/utxo_digest/2</a><br /></li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>/output_status</summary>
+                    <div class="indent">
+                        Reports whether a transaction output (addition record) is <i>not_known</i>,
+                        <i>in_mempool</i>, or <i>mined</i> (with block height and digest). Argument is the
+                        80-character hex addition record.
+                        <h4>Example</h4>
+                        <ul>
+                            <li>/rpc/output_status/&lt;addition_record_hex&gt;</li>
                         </ul>
                     </div>
                 </details>
