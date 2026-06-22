@@ -7,6 +7,7 @@ use axum::response::Html;
 use axum::response::Response;
 use boilerplate::Trusted;
 use neptune_cash::protocol::consensus::block::block_info::BlockInfo;
+use num_traits::Zero;
 use tarpc::context;
 use thousands::Separable;
 
