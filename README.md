@@ -39,6 +39,7 @@ nohup neptune-explorer --site-domain testdomain 2>&1 > /path/to/logs/neptune-exp
 
 Notes:
 * The block-explorer automatically uses the same network (mainnet, testnet, etc) as the neptune-core instance it is connected to, and the network is displayed in the web interface.
+* The transaction-output tracking page (`/output/<addition-record-hex>` and the `/rpc/output_status/...` endpoint) is only enabled when the connected neptune-core node is started with `--utxo-index`. Without the index, looking up an output's origin block would require a full-chain scan per request, so the page is disabled (returns HTTP 503) to avoid DoS-ing the node. The explorer detects this automatically at startup and on reconnect.
 * If neptune-core RPC server is running on a non-standard port, you can provide it with the `--neptune-rpc-port` flag.
 * neptune-explorer listens for http requests on port 3000 by default.  This can be changed with the `--listen-port` flag.
 * Site name can be specified with the --site-name flag.

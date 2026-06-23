@@ -22,6 +22,14 @@ pub struct AppStateInner {
     pub rpc_client: neptune_rpc::AuthenticatedClient,
     pub genesis_digest: Digest,
 
+    /// Whether the connected neptune-core node maintains a UTXO index (started
+    /// with `--utxo-index`). The tx-output tracking page relies on
+    /// `utxo_origin_block`, which only performs an indexed (non-scanning) lookup
+    /// when this is true; the page is disabled otherwise to avoid DoS-ing the
+    /// node with a full-chain scan. Detected at startup and refreshed on
+    /// reconnect.
+    pub maintains_utxo_index: bool,
+
     /// Whenever an announcement of type transparent transaction info is fetched
     /// from the RPC endpoint, we learn information about UTXOs. Since we expect
     /// transparent transactions to be rare, it is okay to cache this in RAM
@@ -68,11 +76,17 @@ impl AppState {
             .with_context(|| "Failed calling neptune-core api method: block_digest")?
             .with_context(|| "neptune-core failed to provide a genesis block")?;
 
+        let maintains_utxo_index = rpc_client
+            .maintains_utxo_index(tarpc::context::current(), rpc_client.token)
+            .await
+            .with_context(|| "Failed to determine whether neptune-core maintains a UTXO index")?;
+
         Ok(AppState::new(AppStateInner {
             network: rpc_client.network,
             config: Config::parse(),
             rpc_client,
             genesis_digest,
+            maintains_utxo_index,
             transparent_utxos_cache: Arc::new(Mutex::new(vec![])),
         }))
     }
@@ -88,7 +102,11 @@ impl AppState {
     ///
     /// Note that this method takes &self, so interior
     /// mutability occurs.
-    pub fn set_rpc_client(&self, rpc_client: neptune_rpc::AuthenticatedClient) {
+    pub fn set_rpc_client(
+        &self,
+        rpc_client: neptune_rpc::AuthenticatedClient,
+        maintains_utxo_index: bool,
+    ) {
         let inner = self.0.load();
 
         let new_inner = AppStateInner {
@@ -96,6 +114,7 @@ impl AppState {
             rpc_client,
             config: inner.config.clone(),
             genesis_digest: inner.genesis_digest,
+            maintains_utxo_index,
             transparent_utxos_cache: inner.transparent_utxos_cache.clone(),
         };
         self.0.store(Arc::new(new_inner));

@@ -247,6 +247,40 @@ impl AuthenticatedClient {
         // otherwise, return the original error
         rpc_result
     }
+
+    /// Detect whether the connected neptune-core node maintains a UTXO index
+    /// (i.e. was started with `--utxo-index`).
+    ///
+    /// There is no dedicated RPC for this at the pinned node revision. However,
+    /// `block_heights_by_announcement_flags` is gated on the flag and returns
+    /// [`RpcError::UtxoIndexNotPresent`] when the index is absent; probing it
+    /// with an empty flag set performs no database lookups, so it is a cheap and
+    /// reliable detector.
+    ///
+    /// This matters because [`RPCClient::utxo_origin_block`] with no
+    /// search-depth bound performs a full tip->genesis scan on a node without an
+    /// index, which would let the `tx_output` page DoS the node. Callers use
+    /// this to keep that page disabled unless the node maintains the index.
+    pub async fn maintains_utxo_index(
+        &self,
+        ctx: ::tarpc::context::Context,
+        token: auth::Token,
+    ) -> anyhow::Result<bool> {
+        match self
+            .client
+            .block_heights_by_announcement_flags(ctx, token, vec![])
+            .await
+        {
+            Ok(Ok(_)) => Ok(true),
+            Ok(Err(RpcError::UtxoIndexNotPresent)) => Ok(false),
+            Ok(Err(other)) => Err(anyhow::anyhow!(
+                "unexpected RPC error while probing utxo-index: {other:?}"
+            )),
+            Err(transport) => {
+                Err(transport).context("RPC transport error while probing utxo-index")
+            }
+        }
+    }
 }
 
 /// generates RPCClient, for querying neptune-core RPC server.
@@ -381,7 +415,17 @@ pub async fn watchdog(app_state: AppState) {
 
         if !now_connected {
             if let Ok(c) = gen_authenticated_rpc_client().await {
-                app_state.set_rpc_client(c);
+                // Re-probe UTXO-index support on reconnect so the tx-output page
+                // can't stay enabled against a node that no longer maintains the
+                // index (and vice-versa). On probe failure, disable to be safe.
+                let maintains_utxo_index = c
+                    .maintains_utxo_index(context::current(), c.token)
+                    .await
+                    .unwrap_or_else(|e| {
+                        warn!("failed to re-probe utxo-index on reconnect ({e}); disabling tx-output page");
+                        false
+                    });
+                app_state.set_rpc_client(c, maintains_utxo_index);
             }
         }
     }

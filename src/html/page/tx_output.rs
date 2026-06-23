@@ -10,7 +10,9 @@ use thousands::Separable;
 
 use crate::html::component::header::HeaderHtml;
 use crate::html::page::not_found::not_found_html_response;
+use crate::html::page::not_found::not_found_page;
 use crate::http_util::rpc_method_err;
+use crate::http_util::service_unavailable_html;
 use crate::model::app_state::AppState;
 use crate::model::output_status::resolve_output_status;
 use crate::model::output_status::AdditionRecordHex;
@@ -42,6 +44,17 @@ pub async fn tx_output_page(
     }
 
     let state = &state_rw.load();
+
+    // Only active when the node maintains a UTXO index; otherwise
+    // `utxo_origin_block` would do a full-chain scan and could be used to DoS
+    // the node. See `AuthenticatedClient::maintains_utxo_index`.
+    if !state.maintains_utxo_index {
+        return Err(service_unavailable_html(not_found_page(Some(
+            "Transaction-output tracking is unavailable: the connected neptune-core node is \
+             not running with --utxo-index."
+                .to_string(),
+        ))));
+    }
 
     let Path(addition_record_hex) =
         user_input_maybe.map_err(|e| not_found_html_response(state, Some(e.to_string())))?;

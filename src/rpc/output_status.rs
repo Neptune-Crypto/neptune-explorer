@@ -8,6 +8,7 @@ use serde::Serialize;
 
 use crate::http_util::rpc_err;
 use crate::http_util::rpc_method_err;
+use crate::http_util::service_unavailable_err;
 use crate::model::app_state::AppState;
 use crate::model::output_status::resolve_output_status;
 use crate::model::output_status::AdditionRecordHex;
@@ -44,6 +45,14 @@ pub async fn output_status(
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<OutputStatusResponse>, Response> {
     let s = state.load();
+
+    // Only active when the node maintains a UTXO index (otherwise
+    // `utxo_origin_block` would full-chain scan and could DoS the node).
+    if !s.maintains_utxo_index {
+        return Err(service_unavailable_err(
+            "tx-output tracking requires the connected neptune-core node to run with --utxo-index",
+        ));
+    }
 
     let status = resolve_output_status(&s, addition_record_hex.addition_record())
         .await

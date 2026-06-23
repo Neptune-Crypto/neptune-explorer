@@ -133,12 +133,13 @@ pub enum OutputStatusError {
 /// block we report `Mined` even if a (now redundant) copy still lingers in the
 /// mempool. Only if it is not in any canonical block do we scan the mempool.
 ///
-/// Performance note: `utxo_origin_block(.., None)` scans the canonical chain
-/// tip→genesis on each call unless the backing neptune-core node runs with
-/// `--utxo-index` (in which case the lookup is indexed). The mempool check is
-/// `O(mempool size)` RPC round-trips, since no single RPC exposes mempool
-/// addition records. Both are acceptable for a per-output lookup; an indexed
-/// node makes the mined check effectively constant-time.
+/// Performance / DoS note: `utxo_origin_block(.., None)` is an indexed,
+/// constant-time lookup when the node runs with `--utxo-index`, but a full
+/// tip→genesis scan otherwise. Callers MUST only invoke this when the node
+/// maintains the index (see `AppStateInner::maintains_utxo_index`); the handlers
+/// gate on that flag, so the unbounded `None` below is safe. The mempool check
+/// is `O(mempool size)` RPC round-trips, since no single RPC exposes mempool
+/// addition records.
 pub async fn resolve_output_status(
     state: &AppStateInner,
     addition_record: AdditionRecord,

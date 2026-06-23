@@ -61,6 +61,7 @@
             </details>
         </article>
 
+        %% if self.state.maintains_utxo_index {
         <article>
             <details open>
                 <summary>Transaction Output Lookup</summary>
@@ -79,6 +80,7 @@
                 </form>
             </details>
         </article>
+        %% }
 
         <article>
             <details open>
@@ -161,6 +163,7 @@
                     </div>
                 </details>
 
+                %% if self.state.maintains_utxo_index {
                 <details>
                     <summary>/output_status</summary>
                     <div class="indent">
@@ -173,6 +176,7 @@
                         </ul>
                     </div>
                 </details>
+                %% }
 
             </details>
         </article>
