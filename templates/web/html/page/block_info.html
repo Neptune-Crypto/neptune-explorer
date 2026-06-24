@@ -71,9 +71,9 @@
                         <span class="tooltip">ⓘ
                             <span class="tooltiptext">
                                 Remaining amount that may still pass through the lustration barrier (AKA transparency
-                                gateway), introduced at HardforkBeta. It is decremented by the value of each
-                                pre-HardforkBeta UTXO that is spent. As long as it is positive, we can be sure a past
-                                soundness error has not inflated the monetary supply.
+                                gateway), intialized at HardforkGamma. It is decremented by the value of each
+                                pre-HardforkGamma UTXO that is spent. As long as it is positive, we can be sure a past
+                                soundness error has not inflated the monetary supply beyond its intended value.
                             </span>
                         </span>
                     </td>
@@ -83,10 +83,10 @@
                     <td>Lustration state</td>
                     <td>
                         {% if lustration.counter.is_zero() { %}
-                        Closed &mdash; the barrier is exhausted; UTXOs created before HardforkBeta can no longer be
+                        Closed &mdash; the barrier is exhausted; UTXOs created before HardforkGamma can no longer be
                         spent.
                         {% } else { %}
-                        Active &mdash; up to {{lustration.counter.display_n_decimals(8)}} NPT of pre-HardforkBeta value
+                        Active &mdash; up to {{lustration.counter.display_n_decimals(8)}} NPT of pre-HardforkGamma value
                         may still be spent.
                         {% } %}
                     </td>
