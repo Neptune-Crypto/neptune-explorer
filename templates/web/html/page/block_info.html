@@ -65,21 +65,43 @@
                         {% } %}
                     </td>
                 </tr>
-                %% if self.block_info.lustration_status.is_some() {
+                %% if let Some(lustration) = self.block_info.lustration_status {
                 <tr>
                     <td>Lustration counter
                         <span class="tooltip">ⓘ
                             <span class="tooltiptext">
-                                Remaining amount that is allowed through the lustration barrier, AKA transparency
-                                gateway.
-                                As long as this number is positive, we can be sure a past soundness error has not
-                                inflated the monetary supply.
-                                Lustration threshold:
-                                {{self.block_info.lustration_status.unwrap().max_lustrating_aocl_leaf_index}}
+                                Remaining amount that may still pass through the lustration barrier (AKA transparency
+                                gateway), introduced at HardforkBeta. It is decremented by the value of each
+                                pre-HardforkBeta UTXO that is spent. As long as it is positive, we can be sure a past
+                                soundness error has not inflated the monetary supply.
                             </span>
                         </span>
                     </td>
-                    <td>{{self.block_info.lustration_status.unwrap().counter}}</td>
+                    <td>{{lustration.counter.display_n_decimals(8)}}</td>
+                </tr>
+                <tr>
+                    <td>Lustration state</td>
+                    <td>
+                        {% if lustration.counter.is_zero() { %}
+                        Closed &mdash; the barrier is exhausted; UTXOs created before HardforkBeta can no longer be
+                        spent.
+                        {% } else { %}
+                        Active &mdash; up to {{lustration.counter.display_n_decimals(8)}} NPT of pre-HardforkBeta value
+                        may still be spent.
+                        {% } %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Lustration threshold
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">
+                                AOCL leaf-index boundary. Outputs at or below this index must lustrate &mdash; publicly
+                                reveal their input values via announcements &mdash; when spent. Outputs above it need
+                                not.
+                            </span>
+                        </span>
+                    </td>
+                    <td class="mono">{{lustration.max_lustrating_aocl_leaf_index.separate_with_commas()}}</td>
                 </tr>
                 %% }
                 <tr>
