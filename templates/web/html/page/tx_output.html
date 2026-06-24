@@ -41,8 +41,12 @@
                         {% } else if self.in_mempool { %}
                         <strong>In mempool</strong> &mdash; produced by a transaction currently waiting in the mempool;
                         not yet mined.
+                        <br /><small><i>Mempool status is served from a snapshot and may be a few seconds out of
+                                date.</i></small>
                         {% } else { %}
                         <strong>Not known</strong> &mdash; not in the mempool and not in any canonical block.
+                        <br /><small><i>Mempool status is served from a snapshot and may be a few seconds out of
+                                date.</i></small>
                         {% } %}
                     </td>
                 </tr>
