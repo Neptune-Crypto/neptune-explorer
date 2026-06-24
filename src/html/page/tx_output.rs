@@ -18,6 +18,7 @@ use crate::model::output_status::resolve_output_status;
 use crate::model::output_status::AdditionRecordHex;
 use crate::model::output_status::OutputStatus;
 use crate::model::output_status::OutputStatusError;
+use crate::model::output_status::INDEX_REQUIRED_MESSAGE;
 
 /// HTML page reporting the status of a transaction output (addition record):
 /// not known, in mempool, or mined into a canonical block (with a link to it).
@@ -45,15 +46,14 @@ pub async fn tx_output_page(
 
     let state = &state_rw.load();
 
-    // Only active when the node maintains a UTXO index; otherwise
-    // `utxo_origin_block` would do a full-chain scan and could be used to DoS
-    // the node. See `AuthenticatedClient::maintains_utxo_index`.
+    // 503 page used when the node maintains no UTXO index. The page is checked
+    // here for a clean early response, and the same condition is also enforced
+    // inside `resolve_output_status` (`IndexUnavailable`) so the guard can't be
+    // bypassed; see `AuthenticatedClient::maintains_utxo_index`.
+    let index_unavailable =
+        || service_unavailable_html(not_found_page(Some(INDEX_REQUIRED_MESSAGE.to_string())));
     if !state.maintains_utxo_index {
-        return Err(service_unavailable_html(not_found_page(Some(
-            "Transaction-output tracking is unavailable: the connected neptune-core node is \
-             not running with --utxo-index."
-                .to_string(),
-        ))));
+        return Err(index_unavailable());
     }
 
     let Path(addition_record_hex) =
@@ -62,14 +62,15 @@ pub async fn tx_output_page(
     // Note: an RPC error is surfaced as an error page here (NOT reported as
     // "not known"), so an exchange never sees a false negative from a transport
     // hiccup.
-    let status = resolve_output_status(state, addition_record_hex.addition_record())
+    let resolved = resolve_output_status(state, addition_record_hex.addition_record())
         .await
         .map_err(|e| match e {
             OutputStatusError::Transport(t) => not_found_html_response(state, Some(t.to_string())),
             OutputStatusError::Method(m) => rpc_method_err(m),
+            OutputStatusError::IndexUnavailable => index_unavailable(),
         })?;
 
-    let (in_mempool, mined_block_digest_hex, mined_height) = match status {
+    let (in_mempool, mined_block_digest_hex, mined_height) = match resolved.status {
         OutputStatus::NotKnown => (false, None, None),
         OutputStatus::InMempool => (true, None, None),
         OutputStatus::Mined {

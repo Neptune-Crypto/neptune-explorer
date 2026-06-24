@@ -12,6 +12,7 @@ use neptune_cash::protocol::consensus::block::block_selector::{
 use tokio::sync::Mutex;
 
 use crate::model::config::Config;
+use crate::model::output_status::MempoolOutputsCache;
 use crate::model::transparent_utxo_tuple::TransparentUtxoTuple;
 use crate::neptune_rpc;
 
@@ -35,6 +36,11 @@ pub struct AppStateInner {
     /// transparent transactions to be rare, it is okay to cache this in RAM
     /// instead of storing it on disk.
     pub transparent_utxos_cache: Arc<Mutex<Vec<TransparentUtxoTuple>>>,
+
+    /// Short-TTL snapshot of all mempool output addition records, so the
+    /// tx-output endpoint can answer "is this output in the mempool?" in O(1)
+    /// instead of an O(mempool-size) RPC scan on every request.
+    pub mempool_outputs_cache: Arc<Mutex<MempoolOutputsCache>>,
 }
 
 impl AppStateInner {
@@ -88,6 +94,7 @@ impl AppState {
             genesis_digest,
             maintains_utxo_index,
             transparent_utxos_cache: Arc::new(Mutex::new(vec![])),
+            mempool_outputs_cache: Arc::new(Mutex::new(MempoolOutputsCache::default())),
         }))
     }
 
@@ -116,6 +123,9 @@ impl AppState {
             genesis_digest: inner.genesis_digest,
             maintains_utxo_index,
             transparent_utxos_cache: inner.transparent_utxos_cache.clone(),
+            // Fresh snapshot on reconnect: the mempool belongs to the (possibly
+            // different) node we just reconnected to.
+            mempool_outputs_cache: Arc::new(Mutex::new(MempoolOutputsCache::default())),
         };
         self.0.store(Arc::new(new_inner));
     }
