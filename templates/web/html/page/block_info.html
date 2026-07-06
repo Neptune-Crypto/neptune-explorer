@@ -79,30 +79,6 @@
                     </td>
                     <td>{{lustration.counter.display_n_decimals(8)}}</td>
                 </tr>
-                <tr>
-                    <td>Lustration state</td>
-                    <td>
-                        {% if lustration.counter.is_zero() { %}
-                        Closed &mdash; the barrier is exhausted; UTXOs created before HardforkGamma can no longer be
-                        spent.
-                        {% } else { %}
-                        Active &mdash; up to {{lustration.counter.display_n_decimals(8)}} NPT of pre-HardforkGamma value
-                        may still be spent.
-                        {% } %}
-                    </td>
-                </tr>
-                <tr>
-                    <td>Lustration threshold
-                        <span class="tooltip">ⓘ
-                            <span class="tooltiptext">
-                                AOCL leaf-index boundary. Outputs at or below this index must lustrate &mdash; publicly
-                                reveal their input values via announcements &mdash; when spent. Outputs above it need
-                                not.
-                            </span>
-                        </span>
-                    </td>
-                    <td class="mono">{{lustration.max_lustrating_aocl_leaf_index.separate_with_commas()}}</td>
-                </tr>
                 %% }
                 <tr>
                     <td>Difficulty</td>

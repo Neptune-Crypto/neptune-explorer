@@ -37,9 +37,9 @@ pub struct AppStateInner {
     /// instead of storing it on disk.
     pub transparent_utxos_cache: Arc<Mutex<Vec<TransparentUtxoTuple>>>,
 
-    /// Short-TTL snapshot of all mempool output addition records, so the
-    /// tx-output endpoint can answer "is this output in the mempool?" in O(1)
-    /// instead of an O(mempool-size) RPC scan on every request.
+    /// Short-TTL snapshot of publishable mempool output addition records and
+    /// their transaction details, so the tx-output endpoint can answer from an
+    /// O(1) lookup instead of an O(mempool-size) RPC scan on every request.
     pub mempool_outputs_cache: Arc<Mutex<MempoolOutputsCache>>,
 }
 

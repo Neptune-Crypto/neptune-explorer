@@ -6,7 +6,7 @@
 //!   * [`OutputStatus::NotKnown`]  – not in the mempool and not in any canonical
 //!     block,
 //!   * [`OutputStatus::InMempool`] – present as an output of a transaction that
-//!     is currently in the mempool, or
+//!     is currently in the mempool, with basic transaction details, or
 //!   * [`OutputStatus::Mined`]     – mined into a canonical block (of a known
 //!     height, with the block's digest).
 //!
@@ -17,7 +17,7 @@
 //!   * [`resolve_output_status`], the shared resolver used by both the HTML page
 //!     and the JSON endpoint so they cannot disagree.
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use chrono::DateTime;
@@ -25,6 +25,9 @@ use chrono::Utc;
 use neptune_cash::api::export::AdditionRecord;
 use neptune_cash::api::export::BlockHeight;
 use neptune_cash::api::export::Digest;
+use neptune_cash::api::export::NativeCurrencyAmount;
+use neptune_cash::api::export::TransactionKernelId;
+use neptune_cash::api::export::TransactionProofType;
 use neptune_cash::application::rpc::auth;
 use neptune_cash::application::rpc::server::error::RpcError;
 use neptune_cash::protocol::consensus::block::block_selector::BlockSelector;
@@ -101,8 +104,13 @@ impl From<AdditionRecordHex> for AdditionRecord {
 pub enum OutputStatus {
     /// Not found in the mempool nor in any canonical block.
     NotKnown,
-    /// Present as an output of a transaction currently in the mempool.
-    InMempool,
+    /// Present as an output of a publishable transaction currently in the
+    /// mempool.
+    ///
+    /// Primitive-witness-backed transactions are intentionally excluded because
+    /// they are kept local to the creating node and exposing them would leak
+    /// node operator privacy.
+    InMempool(MempoolOutputInfo),
     /// Mined into a canonical block.
     ///
     /// `height` is `None` only in the (practically impossible) race where the
@@ -112,6 +120,21 @@ pub enum OutputStatus {
         block_digest: Digest,
         height: Option<BlockHeight>,
     },
+}
+
+/// Mempool transaction details for the transaction that created a tracked
+/// output.
+#[derive(Debug, Clone)]
+pub struct MempoolOutputInfo {
+    pub transaction_id: TransactionKernelId,
+    pub fee: NativeCurrencyAmount,
+    pub num_inputs: usize,
+    pub num_outputs: usize,
+    pub proof_type: TransactionProofType,
+    /// One-based position among publishable mempool transactions sorted by fee
+    /// density.
+    pub queue_position: usize,
+    pub queue_len: usize,
 }
 
 /// A resolved [`OutputStatus`] together with the freshness of the mempool data
@@ -157,13 +180,14 @@ pub const INDEX_REQUIRED_MESSAGE: &str =
 /// they know an `in_mempool` / `not_known` answer can lag by up to this much.
 pub const MEMPOOL_OUTPUTS_TTL_SECS: u64 = 5;
 
-/// Short-TTL cache of every addition record currently in the mempool, used for
-/// O(1) "is this output in the mempool?" membership checks. Lives in
+/// Short-TTL cache of every addition record currently in a publishable mempool
+/// transaction, mapped to basic details about the transaction that creates it.
+/// Used for O(1) "is this output in the public mempool view?" lookups. Lives in
 /// [`AppStateInner`] behind an async mutex. `refreshed_at` is wall-clock so it
 /// can be surfaced to API consumers as the freshness of their answer.
 #[derive(Debug, Default)]
 pub struct MempoolOutputsCache {
-    outputs: HashSet<AdditionRecord>,
+    outputs: HashMap<AdditionRecord, MempoolOutputInfo>,
     refreshed_at: Option<DateTime<Utc>>,
 }
 
@@ -177,7 +201,7 @@ impl MempoolOutputsCache {
 
 /// Resolve the [`OutputStatus`] of an addition record using only RPC methods
 /// that exist at the explorer's pinned neptune-core revision:
-/// `utxo_origin_block`, `block_info`, `mempool_tx_ids`, `mempool_tx_kernel`.
+/// `utxo_origin_block`, `block_info`, `mempool_overview`, `mempool_tx_kernel`.
 ///
 /// Precedence: **mined wins**. If the output has been mined into a canonical
 /// block we report `Mined` even if a (now redundant) copy still lingers in the
@@ -190,10 +214,10 @@ impl MempoolOutputsCache {
 ///   node maintains the index (`AppStateInner::maintains_utxo_index`), so the
 ///   unbounded `None` below is never reached without the index.
 /// * The mempool check would otherwise be `O(mempool size)` RPC round-trips
-///   (`mempool_tx_ids` + one `mempool_tx_kernel` per tx), since no single RPC
-///   exposes mempool addition records. It is served from a short-TTL snapshot
-///   ([`MempoolOutputsCache`]) so that scan runs at most once per TTL regardless
-///   of request volume.
+///   (`mempool_overview` + one `mempool_tx_kernel` per tx), since no single RPC
+///   exposes output-to-transaction details. It is served from a short-TTL
+///   snapshot ([`MempoolOutputsCache`]) so that scan runs at most once per TTL
+///   regardless of request volume.
 pub async fn resolve_output_status(
     state: &AppStateInner,
     addition_record: AdditionRecord,
@@ -254,11 +278,11 @@ pub async fn resolve_output_status(
             cache.outputs = fetch_mempool_outputs(state, token).await?;
             cache.refreshed_at = Some(now);
         }
-        let found = cache.outputs.contains(&addition_record);
+        let found = cache.outputs.get(&addition_record).cloned();
         let checked_at = cache.refreshed_at;
-        if found {
+        if let Some(info) = found {
             return Ok(ResolvedOutputStatus {
-                status: OutputStatus::InMempool,
+                status: OutputStatus::InMempool(info),
                 mempool_checked_at: checked_at,
             });
         }
@@ -272,36 +296,73 @@ pub async fn resolve_output_status(
     })
 }
 
-/// Fetch the set of all addition records currently in the mempool. This is the
-/// expensive part — `mempool_tx_ids` plus one `mempool_tx_kernel` per tx, since
-/// no single RPC exposes mempool addition records. Callers run it behind
-/// [`MempoolOutputsCache`] so it executes at most once per TTL.
+/// Fetch details for all addition records currently in publishable mempool
+/// transactions. This is the expensive part: `mempool_overview` plus one
+/// `mempool_tx_kernel` per tx, since no single RPC exposes
+/// output-to-transaction details. Callers run it behind [`MempoolOutputsCache`]
+/// so it executes at most once per TTL.
 async fn fetch_mempool_outputs(
     state: &AppStateInner,
     token: auth::Token,
-) -> Result<HashSet<AdditionRecord>, OutputStatusError> {
-    let tx_ids = state
+) -> Result<HashMap<AdditionRecord, MempoolOutputInfo>, OutputStatusError> {
+    let tx_count = state
         .rpc_client
-        .mempool_tx_ids(context::current(), token)
+        .mempool_tx_count(context::current(), token)
         .await
         .map_err(OutputStatusError::Transport)?
         .map_err(OutputStatusError::Method)?;
 
-    let mut outputs = HashSet::new();
-    for tx_id in tx_ids {
-        // A tx evicted between mempool_tx_ids and mempool_tx_kernel yields None;
-        // skip it.
+    let tx_infos = state
+        .rpc_client
+        .mempool_overview(context::current(), token, 0, tx_count)
+        .await
+        .map_err(OutputStatusError::Transport)?
+        .map_err(OutputStatusError::Method)?;
+
+    let queue_len = tx_infos
+        .iter()
+        .filter(|tx_info| publishes_mempool_transaction(tx_info.proof_type))
+        .count();
+    let mut queue_position = 0;
+    let mut outputs = HashMap::new();
+    for tx_info in tx_infos {
+        if !publishes_mempool_transaction(tx_info.proof_type) {
+            continue;
+        }
+
+        queue_position += 1;
+
+        // A tx evicted between mempool_overview and mempool_tx_kernel yields
+        // None; skip it.
         if let Some(kernel) = state
             .rpc_client
-            .mempool_tx_kernel(context::current(), token, tx_id)
+            .mempool_tx_kernel(context::current(), token, tx_info.id)
             .await
             .map_err(OutputStatusError::Transport)?
             .map_err(OutputStatusError::Method)?
         {
-            outputs.extend(kernel.outputs.iter().copied());
+            let output_info = MempoolOutputInfo {
+                transaction_id: tx_info.id,
+                fee: tx_info.fee,
+                num_inputs: tx_info.num_inputs,
+                num_outputs: tx_info.num_outputs,
+                proof_type: tx_info.proof_type,
+                queue_position,
+                queue_len,
+            };
+
+            for output in kernel.outputs.iter().copied() {
+                // If two mempool transactions somehow produce the same output
+                // commitment, keep the one with the higher fee-density position.
+                outputs.entry(output).or_insert_with(|| output_info.clone());
+            }
         }
     }
     Ok(outputs)
+}
+
+fn publishes_mempool_transaction(proof_type: TransactionProofType) -> bool {
+    !matches!(proof_type, TransactionProofType::PrimitiveWitness)
 }
 
 #[cfg(test)]
@@ -342,5 +403,18 @@ mod tests {
         assert!("00".parse::<AdditionRecordHex>().is_err());
         // Right length but non-canonical BField limbs (all 0xff > modulus).
         assert!("f".repeat(80).parse::<AdditionRecordHex>().is_err());
+    }
+
+    #[test]
+    fn primitive_witness_mempool_transactions_are_not_published() {
+        assert!(!publishes_mempool_transaction(
+            TransactionProofType::PrimitiveWitness
+        ));
+        assert!(publishes_mempool_transaction(
+            TransactionProofType::ProofCollection
+        ));
+        assert!(publishes_mempool_transaction(
+            TransactionProofType::SingleProof
+        ));
     }
 }

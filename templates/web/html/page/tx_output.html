@@ -50,6 +50,32 @@
                         {% } %}
                     </td>
                 </tr>
+                {% if let Some(mempool_info) = &self.mempool_info { %}
+                <tr>
+                    <td>Mempool transaction</td>
+                    <td><span class="mono">{{mempool_info.transaction_id}}</span></td>
+                </tr>
+                <tr>
+                    <td>Fee</td>
+                    <td>{{mempool_info.fee}}</td>
+                </tr>
+                <tr>
+                    <td>Inputs</td>
+                    <td>{{mempool_info.num_inputs}}</td>
+                </tr>
+                <tr>
+                    <td>Outputs</td>
+                    <td>{{mempool_info.num_outputs}}</td>
+                </tr>
+                <tr>
+                    <td>Proof quality</td>
+                    <td>{{mempool_info.proof_quality}}</td>
+                </tr>
+                <tr>
+                    <td>Fee-density queue position</td>
+                    <td>{{mempool_info.queue_position}}</td>
+                </tr>
+                {% } %}
             </table>
         </article>
 

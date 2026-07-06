@@ -71,7 +71,8 @@
                         <span class="tooltiptext">
                             Track a transaction output by its addition record: the 80-character hexadecimal
                             canonical commitment of the output. Reports whether it is not known, in the mempool,
-                            or mined into a canonical block.
+                            or mined into a canonical block. When the output is in a publishable mempool
+                            transaction, basic transaction details are shown as well.
                         </span>
                     </span>
                     Addition record (hex):
@@ -172,7 +173,11 @@
                         80-character hex addition record. A <i>mined</i> answer is computed fresh on every
                         request; <i>in_mempool</i> / <i>not_known</i> are derived from a mempool snapshot taken
                         at <code>mempool_checked_at</code> and reused for <code>mempool_cache_ttl_seconds</code>,
-                        so mempool status can lag by up to that many seconds.
+                        so mempool status can lag by up to that many seconds. Primitive-witness-backed
+                        transactions are excluded from this public mempool view because they are local-only.
+                        For <i>in_mempool</i>, the response also includes the transaction id, fee,
+                        input/output counts, proof quality, and queue position among publishable transactions
+                        in fee-density order.
                         <h4>Example</h4>
                         <ul>
                             <li>/rpc/output_status/&lt;addition_record_hex&gt;</li>

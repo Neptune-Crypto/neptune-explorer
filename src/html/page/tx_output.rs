@@ -16,9 +16,19 @@ use crate::http_util::service_unavailable_html;
 use crate::model::app_state::AppState;
 use crate::model::output_status::resolve_output_status;
 use crate::model::output_status::AdditionRecordHex;
+use crate::model::output_status::MempoolOutputInfo;
 use crate::model::output_status::OutputStatus;
 use crate::model::output_status::OutputStatusError;
 use crate::model::output_status::INDEX_REQUIRED_MESSAGE;
+
+struct MempoolOutputHtmlInfo {
+    transaction_id: String,
+    fee: String,
+    num_inputs: usize,
+    num_outputs: usize,
+    proof_quality: &'static str,
+    queue_position: String,
+}
 
 /// HTML page reporting the status of a transaction output (addition record):
 /// not known, in mempool, or mined into a canonical block (with a link to it).
@@ -37,6 +47,7 @@ pub async fn tx_output_page(
         header: HeaderHtml<'a>,
         addition_record_hex: String,
         in_mempool: bool,
+        mempool_info: Option<MempoolOutputHtmlInfo>,
         /// `Some` iff mined into a canonical block.
         mined_block_digest_hex: Option<String>,
         /// Comma-formatted height of the mining block; `None` if mined but the
@@ -70,14 +81,15 @@ pub async fn tx_output_page(
             OutputStatusError::IndexUnavailable => index_unavailable(),
         })?;
 
-    let (in_mempool, mined_block_digest_hex, mined_height) = match resolved.status {
-        OutputStatus::NotKnown => (false, None, None),
-        OutputStatus::InMempool => (true, None, None),
+    let (in_mempool, mempool_info, mined_block_digest_hex, mined_height) = match resolved.status {
+        OutputStatus::NotKnown => (false, None, None, None),
+        OutputStatus::InMempool(info) => (true, Some(mempool_html_info(info)), None, None),
         OutputStatus::Mined {
             block_digest,
             height,
         } => (
             false,
+            None,
             Some(block_digest.to_hex()),
             height.map(|h| u64::from(h).separate_with_commas()),
         ),
@@ -89,8 +101,36 @@ pub async fn tx_output_page(
         header,
         addition_record_hex: addition_record_hex.to_hex(),
         in_mempool,
+        mempool_info,
         mined_block_digest_hex,
         mined_height,
     };
     Ok(Html(page.to_string()))
+}
+
+fn mempool_html_info(info: MempoolOutputInfo) -> MempoolOutputHtmlInfo {
+    MempoolOutputHtmlInfo {
+        transaction_id: info.transaction_id.to_string(),
+        fee: format!("{} NPT", info.fee.display_n_decimals(8)),
+        num_inputs: info.num_inputs,
+        num_outputs: info.num_outputs,
+        proof_quality: proof_quality_label(info.proof_type),
+        queue_position: format!(
+            "{} of {}",
+            info.queue_position.separate_with_commas(),
+            info.queue_len.separate_with_commas()
+        ),
+    }
+}
+
+fn proof_quality_label(
+    proof_type: neptune_cash::api::export::TransactionProofType,
+) -> &'static str {
+    use neptune_cash::api::export::TransactionProofType;
+
+    match proof_type {
+        TransactionProofType::PrimitiveWitness => "Primitive witness",
+        TransactionProofType::ProofCollection => "Proof collection",
+        TransactionProofType::SingleProof => "Single proof",
+    }
 }
