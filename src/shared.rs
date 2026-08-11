@@ -1,9 +1,9 @@
-use neptune_cash::api::export::BlockHeight;
-use neptune_cash::api::export::NativeCurrencyAmount;
-use neptune_cash::protocol::consensus::block::block_height::BLOCKS_PER_GENERATION;
-use neptune_cash::protocol::consensus::block::block_height::NUM_BLOCKS_SKIPPED_BECAUSE_REBOOT;
-use neptune_cash::protocol::consensus::block::Block;
-use neptune_cash::protocol::consensus::block::PREMINE_MAX_SIZE;
+use neptune_consensus::block::Block;
+use neptune_consensus::block::PREMINE_MAX_SIZE;
+use neptune_consensus::type_scripts::native_currency_amount::NativeCurrencyAmount;
+use neptune_primitives::block_height::BlockHeight;
+use neptune_primitives::block_height::BLOCKS_PER_GENERATION;
+use neptune_primitives::block_height::NUM_BLOCKS_SKIPPED_BECAUSE_REBOOT;
 use num_traits::ops::checked::CheckedSub;
 
 /// Return the pair (liquid supply, total supply)

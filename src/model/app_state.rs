@@ -3,12 +3,12 @@ use std::sync::Arc;
 use anyhow::Context;
 use arc_swap::ArcSwap;
 use clap::Parser;
-use neptune_cash::api::export::Network;
 use neptune_cash::application::rpc::auth;
 use neptune_cash::prelude::twenty_first::tip5::Digest;
-use neptune_cash::protocol::consensus::block::block_selector::{
+use neptune_primitives::block_selector::{
     BlockSelector, BlockSelectorLiteral,
 };
+use neptune_primitives::network::Network;
 use tokio::sync::Mutex;
 
 use crate::model::config::Config;

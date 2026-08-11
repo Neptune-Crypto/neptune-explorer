@@ -176,8 +176,10 @@ fn mempool_response_fields(info: MempoolOutputInfo) -> MempoolResponseFields {
     }
 }
 
-fn proof_quality_key(proof_type: neptune_cash::api::export::TransactionProofType) -> &'static str {
-    use neptune_cash::api::export::TransactionProofType;
+fn proof_quality_key(
+    proof_type: neptune_consensus::transaction::transaction_proof::TransactionProofType,
+) -> &'static str {
+    use neptune_consensus::transaction::transaction_proof::TransactionProofType;
 
     match proof_type {
         TransactionProofType::PrimitiveWitness => "primitive_witness",

@@ -4,7 +4,7 @@ use axum::extract::State;
 use axum::response::Json;
 use axum::response::Response;
 use neptune_cash::prelude::twenty_first::tip5::Digest;
-use neptune_cash::protocol::consensus::block::block_header::BlockPow;
+use neptune_consensus::block::block_header::BlockPow;
 use serde::Deserialize;
 use serde::Serialize;
 use tarpc::context;

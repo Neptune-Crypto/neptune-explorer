@@ -1,6 +1,6 @@
-use neptune_cash::api::export::Announcement;
-use neptune_cash::api::export::TransparentInput;
-use neptune_cash::api::export::TransparentTransactionInfo;
+use neptune_consensus::transaction::announcement::Announcement;
+use neptune_consensus::transaction::transparent_input::TransparentInput;
+use neptune_consensus::transaction::transparent_transaction_info::TransparentTransactionInfo;
 use neptune_cash::prelude::triton_vm::prelude::BFieldCodec;
 use neptune_cash::prelude::triton_vm::prelude::BFieldElement;
 
@@ -57,9 +57,9 @@ impl AnnouncementType {
 
 #[cfg(test)]
 mod tests {
-    use neptune_cash::api::export::Announcement;
-    use neptune_cash::api::export::TransparentInput;
-    use neptune_cash::api::export::Utxo;
+    use neptune_consensus::transaction::announcement::Announcement;
+    use neptune_consensus::transaction::transparent_input::TransparentInput;
+    use neptune_consensus::transaction::utxo::Utxo;
     use neptune_cash::prelude::tasm_lib::prelude::Digest;
     use neptune_cash::prelude::triton_vm::prelude::BFieldCodec;
     use neptune_cash::prelude::triton_vm::prelude::BFieldElement;
