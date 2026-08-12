@@ -4,7 +4,7 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::response::Json;
 use axum::response::Response;
-use neptune_cash::protocol::consensus::block::block_info::BlockInfo;
+use neptune_cash::application::rpc::block_info::BlockInfo;
 use tarpc::context;
 
 use crate::http_util::not_found_err;

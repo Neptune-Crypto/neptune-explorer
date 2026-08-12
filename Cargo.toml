@@ -22,7 +22,12 @@ boilerplate = { version = "1.0.1" }
 chrono = "0.4.42"
 clap = "4.5.50"
 lettre = { version = "0.11.19", features = ["tokio1-native-tls"] }
-neptune-cash = "0.12.0"
+neptune-cash = "0.16.0"
+neptune-consensus = "0.16.0"
+neptune-mempool = "0.16.0"
+neptune-mutator-set = "0.16.0"
+neptune-primitives = "0.16.0"
+neptune-wallet = "0.16.0"
 # neptune-cash = { git = "https://github.com/Neptune-Crypto/neptune-core.git", rev = "8a730f3bf93fd5f9a54740ca7844c2ba435f274c" }
 num-traits = "0.2"
 readonly = "0.2.13"

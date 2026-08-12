@@ -7,18 +7,18 @@ use chrono::DateTime;
 use chrono::TimeDelta;
 use chrono::Utc;
 use clap::Parser;
-use neptune_cash::api::export::Announcement;
-use neptune_cash::api::export::Network;
-use neptune_cash::application::config::data_directory::DataDirectory;
 use neptune_cash::application::rpc::auth;
+use neptune_cash::application::rpc::block_info::BlockInfo;
 use neptune_cash::application::rpc::server::error::RpcError;
 use neptune_cash::application::rpc::server::RPCClient;
 use neptune_cash::application::rpc::server::RpcResult;
 use neptune_cash::prelude::tasm_lib::prelude::Digest;
-use neptune_cash::protocol::consensus::block::block_height::BlockHeight;
-use neptune_cash::protocol::consensus::block::block_info::BlockInfo;
-use neptune_cash::protocol::consensus::block::block_selector::BlockSelector;
-use neptune_cash::util_types::mutator_set::addition_record::AdditionRecord;
+use neptune_consensus::transaction::announcement::Announcement;
+use neptune_mutator_set::addition_record::AdditionRecord;
+use neptune_primitives::block_height::BlockHeight;
+use neptune_primitives::block_selector::BlockSelector;
+use neptune_primitives::data_directory::DataDirectory;
+use neptune_primitives::network::Network;
 use tarpc::client;
 use tarpc::context;
 use tarpc::tokio_serde::formats::Json as RpcJson;
@@ -146,7 +146,7 @@ impl AuthenticatedClient {
         #[cfg(feature = "mock")]
         if std::env::var(MOCK_KEY).is_ok() {
             use blake3::Hasher;
-            use neptune_cash::api::export::TransparentTransactionInfo;
+            use neptune_consensus::transaction::transparent_transaction_info::TransparentTransactionInfo;
             use neptune_cash::prelude::triton_vm::prelude::BFieldElement;
             use rand::rngs::StdRng;
             use rand::Rng;

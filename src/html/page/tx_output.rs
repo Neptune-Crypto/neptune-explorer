@@ -124,9 +124,9 @@ fn mempool_html_info(info: MempoolOutputInfo) -> MempoolOutputHtmlInfo {
 }
 
 fn proof_quality_label(
-    proof_type: neptune_cash::api::export::TransactionProofType,
+    proof_type: neptune_consensus::transaction::transaction_proof::TransactionProofType,
 ) -> &'static str {
-    use neptune_cash::api::export::TransactionProofType;
+    use neptune_consensus::transaction::transaction_proof::TransactionProofType;
 
     match proof_type {
         TransactionProofType::PrimitiveWitness => "Primitive witness",

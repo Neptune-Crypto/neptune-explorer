@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::extract::State;
 use axum::response::Html;
 use axum::response::Response;
-use neptune_cash::api::export::BlockHeight;
+use neptune_primitives::block_height::BlockHeight;
 use tarpc::context;
 use thousands::Separable;
 

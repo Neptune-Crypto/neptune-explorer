@@ -2608,15 +2608,15 @@ dependencies = [
 
 [[package]]
 name = "libp2p-identity"
-version = "0.2.13"
+version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0c7892c221730ba55f7196e98b0b8ba5e04b4155651736036628e9f73ed6fc3"
+checksum = "9525f3831544f7ae497bde79adf114ef127b0fbbb97edbbf692a80408636421c"
 dependencies = [
  "bs58",
  "ed25519-dalek",
  "hkdf",
  "multihash",
- "quick-protobuf",
+ "prost",
  "rand 0.8.6",
  "serde",
  "sha2",
@@ -3164,16 +3164,65 @@ dependencies = [
 ]
 
 [[package]]
-name = "neptune-cash"
-version = "0.12.0"
+name = "neptune-archival-mmr"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc6e4ff5f61b389efceef8eb9f290cd3b3733aa07d79a3270145b657e5f27916"
+checksum = "0b2162f50c480b07d98c02531c47597f74ebd3c07737fec0b80714b46b4c2c71"
+dependencies = [
+ "itertools",
+ "neptune-database",
+ "tasm-lib",
+]
+
+[[package]]
+name = "neptune-archival-mutator-set"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d2c9a2ce264a7097162e4b9543a65b663eb6d81f160d93850099646d1310676"
+dependencies = [
+ "itertools",
+ "neptune-archival-mmr",
+ "neptune-database",
+ "neptune-mutator-set",
+ "tasm-lib",
+]
+
+[[package]]
+name = "neptune-archive"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a39bae271576d864ae39db7b6f5e8f67b763bbd3f318bfe5d35e4f3aaf701a3a"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "hex",
+ "itertools",
+ "memmap2",
+ "neptune-archival-mmr",
+ "neptune-archival-mutator-set",
+ "neptune-consensus",
+ "neptune-database",
+ "neptune-locks",
+ "neptune-mutator-set",
+ "neptune-primitives",
+ "num-traits",
+ "regex",
+ "serde",
+ "tasm-lib",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "neptune-cash"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "290867e01fba62c75c2c51358ac1c3d616882fe04fa0918a7e5aed64e5fa366e"
 dependencies = [
  "aead",
  "aes-gcm",
  "anyhow",
  "arraystring",
- "async-stream",
  "async-trait",
  "axum 0.8.9",
  "bech32",
@@ -3194,7 +3243,19 @@ dependencies = [
  "leveldb-sys",
  "libp2p",
  "memmap2",
+ "neptune-archival-mmr",
+ "neptune-archive",
+ "neptune-consensus",
+ "neptune-database",
+ "neptune-job-queue",
+ "neptune-locks",
+ "neptune-mempool",
+ "neptune-mutator-set",
+ "neptune-p2p",
+ "neptune-primitives",
+ "neptune-rpc-api",
  "neptune-rpc-macros",
+ "neptune-wallet",
  "num-bigint",
  "num-rational",
  "num-traits",
@@ -3231,6 +3292,61 @@ dependencies = [
 ]
 
 [[package]]
+name = "neptune-consensus"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75517816dcd770f27847e2f78770db8b0d4bac2008fa4747d3999de1c748784a"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bincode",
+ "clap",
+ "field_count",
+ "futures",
+ "get-size2",
+ "itertools",
+ "neptune-job-queue",
+ "neptune-mutator-set",
+ "neptune-primitives",
+ "num-bigint",
+ "num-rational",
+ "num-traits",
+ "rand 0.9.4",
+ "rayon",
+ "readonly",
+ "regex",
+ "serde",
+ "serde_arrays",
+ "serde_json",
+ "strum",
+ "tasm-lib",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "neptune-database"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c006d444c794250b52ab1500822bc7a80a8b57f8370602dc09429a970f26d701"
+dependencies = [
+ "anyhow",
+ "async-stream",
+ "async-trait",
+ "bincode",
+ "futures",
+ "itertools",
+ "leveldb-sys",
+ "neptune-locks",
+ "rand 0.9.4",
+ "rs-leveldb",
+ "serde",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "neptune-explorer"
 version = "0.1.0"
 dependencies = [
@@ -3250,6 +3366,11 @@ dependencies = [
  "lettre",
  "log",
  "neptune-cash",
+ "neptune-consensus",
+ "neptune-mempool",
+ "neptune-mutator-set",
+ "neptune-primitives",
+ "neptune-wallet",
  "num-traits",
  "proptest",
  "proptest-arbitrary-interop",
@@ -3271,14 +3392,181 @@ dependencies = [
 ]
 
 [[package]]
-name = "neptune-rpc-macros"
-version = "0.12.0"
+name = "neptune-job-queue"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "151c76d64bf852004df1de9997d292738a17f5be648150758cdfcf1c282f1ed4"
+checksum = "c3a46eba5ef98dff1113d095a38373030557b3eba72ef593a6c9cc9380352a24"
+dependencies = [
+ "async-trait",
+ "rand 0.9.4",
+ "strum",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "neptune-locks"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d866808373de591dd875be05b27e4d3c1a4d8c88a31cb67ee0f7b46ac15b6c7c"
+dependencies = [
+ "futures",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "neptune-mempool"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8afb8615625a44ffeca7ed588d1b5f6ac3240424fb72bedc1ee4b6977610ab4"
+dependencies = [
+ "anyhow",
+ "bytesize",
+ "get-size2",
+ "itertools",
+ "neptune-consensus",
+ "neptune-mutator-set",
+ "neptune-primitives",
+ "neptune-rpc-api",
+ "num-rational",
+ "num-traits",
+ "priority-queue",
+ "serde",
+ "strum",
+ "tasm-lib",
+ "tracing",
+]
+
+[[package]]
+name = "neptune-mutator-set"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae7a88da586053bf068b3075da47652d6e13c5a507a9957b1fc84b579292ee55"
+dependencies = [
+ "get-size2",
+ "itertools",
+ "num-traits",
+ "serde",
+ "serde_arrays",
+ "tasm-lib",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "neptune-p2p"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e999f70fcfbc9732de43635e46daa321f68d47bb08be97ab6f80e224bef3531a"
+dependencies = [
+ "anyhow",
+ "arraystring",
+ "itertools",
+ "libp2p-identity",
+ "multiaddr",
+ "multihash",
+ "neptune-consensus",
+ "neptune-mempool",
+ "neptune-primitives",
+ "num-bigint",
+ "num-traits",
+ "rand 0.9.4",
+ "semver",
+ "serde",
+ "sha2",
+ "strum",
+ "tasm-lib",
+ "thiserror 1.0.69",
+ "tracing",
+]
+
+[[package]]
+name = "neptune-primitives"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1abc216038b5bf1b49a7446c3c3dfe81e4d9048d834e5f8608a6b837b1d2f20b"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "directories",
+ "get-size2",
+ "itertools",
+ "num-bigint",
+ "num-traits",
+ "rand 0.9.4",
+ "serde",
+ "strum",
+ "tasm-lib",
+ "thiserror 1.0.69",
+ "tokio",
+]
+
+[[package]]
+name = "neptune-rpc-api"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "363b4e8cb2ee99f1b30cb8f20ac71cb2d075584f8f2c0bcf5db9de08b5cc46cb"
+dependencies = [
+ "async-trait",
+ "hex",
+ "multiaddr",
+ "neptune-consensus",
+ "neptune-mutator-set",
+ "neptune-primitives",
+ "neptune-rpc-macros",
+ "neptune-wallet",
+ "num-bigint",
+ "serde",
+ "serde_arrays",
+ "serde_json",
+ "serde_tuple",
+ "strum",
+ "tasm-lib",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "neptune-rpc-macros"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3e844cb20b41ba4024c63ac567382be62095f6ac665c3fc7b06fc3e605d66b9"
 dependencies = [
  "convert_case",
  "quote",
- "syn 2.0.117",
+ "syn 3.0.3",
+]
+
+[[package]]
+name = "neptune-wallet"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab6e5bd0ca62b7442401c246e80640ed39d2e3bde595fa799f26741dd5112117"
+dependencies = [
+ "aead",
+ "aes-gcm",
+ "anyhow",
+ "bech32",
+ "bincode",
+ "clap",
+ "get-size2",
+ "itertools",
+ "k256",
+ "neptune-consensus",
+ "neptune-mutator-set",
+ "neptune-primitives",
+ "num-traits",
+ "rand 0.9.4",
+ "regex",
+ "serde",
+ "serde_json",
+ "sha3",
+ "strum",
+ "tasm-lib",
+ "thiserror 1.0.69",
+ "tiny-bip39",
+ "tracing",
+ "zeroize",
 ]
 
 [[package]]
@@ -3945,6 +4233,29 @@ checksum = "a1981e49bd2432249da8b0e11e5557099a8e74690d6b94e721f7dc0bb7f3555f"
 dependencies = [
  "arbitrary",
  "proptest",
+]
+
+[[package]]
+name = "prost"
+version = "0.14.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "528ac67416ff8646872a3c02cad9cc4ee5dc9f9540c9b10771855c95cb2e5ae1"
+dependencies = [
+ "bytes",
+ "prost-derive",
+]
+
+[[package]]
+name = "prost-derive"
+version = "0.14.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b570b25f7617e43d59005d0990ccb79e950a423952cea19671b7a876da390adf"
+dependencies = [
+ "anyhow",
+ "itertools",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -4852,6 +5163,17 @@ name = "syn"
 version = "2.0.117"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e665b8803e7b1d2a727f4023456bbbbe74da67099c585258af0ad9c5013b9b99"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
+]
+
+[[package]]
+name = "syn"
+version = "3.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53e9bae58849f64dfa4f5d5ae372c8341f7305f82a3868709269343628b659a3"
 dependencies = [
  "proc-macro2",
  "quote",
